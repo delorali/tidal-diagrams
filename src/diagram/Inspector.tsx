@@ -3,6 +3,7 @@ import {
   Field,
   FieldControl,
   FieldLabel,
+  IconButton,
   Input,
   Select,
   SelectContent,
@@ -12,6 +13,7 @@ import {
   SidePanel,
   SidePanelBody,
   SidePanelHeader,
+  SidePanelHeaderActions,
   SidePanelSection,
   SidePanelSectionContent,
   SidePanelSectionHeader,
@@ -303,9 +305,21 @@ function DocInspector() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
 export function Inspector() {
   const selectedNodeId = useDiagramStore((s) => s.nodes.find((n) => n.selected)?.id);
   const selectedEdgeId = useDiagramStore((s) => s.edges.find((e) => e.selected)?.id);
+  const deleteSelection = useDiagramStore((s) => s.deleteSelection);
 
   return (
     <SidePanel
@@ -315,6 +329,19 @@ export function Inspector() {
     >
       <SidePanelHeader>
         <SidePanelTitle>{selectedNodeId ? "Node" : selectedEdgeId ? "Edge" : "Diagram"}</SidePanelTitle>
+        {(selectedNodeId || selectedEdgeId) && (
+          <SidePanelHeaderActions>
+            <IconButton
+              variant="ghost"
+              tone="destructive"
+              size="sm"
+              aria-label={selectedNodeId ? "Delete node" : "Delete edge"}
+              onClick={deleteSelection}
+            >
+              <TrashIcon />
+            </IconButton>
+          </SidePanelHeaderActions>
+        )}
       </SidePanelHeader>
       <SidePanelBody>
         {selectedNodeId ? (
