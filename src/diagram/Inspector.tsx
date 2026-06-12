@@ -79,7 +79,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
                 <Field>
                   <FieldLabel>Title</FieldLabel>
                   <FieldControl>
-                    <Input
+                    <Input size="sm"
                       value={data.header.title}
                       onChange={(e) =>
                         updateNodeData(nodeId, (d) => ({ ...d, header: { ...d.header!, title: e.target.value } }))
@@ -90,7 +90,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
                 <Field>
                   <FieldLabel>Suffix</FieldLabel>
                   <FieldControl>
-                    <Input
+                    <Input size="sm"
                       value={data.header.suffix ?? ""}
                       placeholder="Muted text after the title"
                       onChange={(e) =>
@@ -115,7 +115,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
             </SidePanelSectionHeader>
             {data.label !== undefined && (
               <SidePanelSectionContent>
-                <Input
+                <Input size="sm"
                   value={data.label}
                   className="font-mono"
                   onChange={(e) => updateNodeData(nodeId, { label: e.target.value })}
@@ -131,7 +131,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
             <SidePanelSectionContent className="space-y-3">
               {(data.rows ?? []).map((row) => (
                 <div key={row.id} className="space-y-1.5 rounded-md border border-border p-2">
-                  <Input
+                  <Input size="sm"
                     value={row.label}
                     placeholder="Label"
                     onChange={(e) =>
@@ -141,7 +141,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
                       }))
                     }
                   />
-                  <Input
+                  <Input size="sm"
                     value={row.value}
                     placeholder="Value"
                     className="font-mono"
@@ -186,7 +186,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
             <SidePanelSectionTitle>{isGroup ? "Group title" : "Label"}</SidePanelSectionTitle>
           </SidePanelSectionHeader>
           <SidePanelSectionContent>
-            <Input
+            <Input size="sm"
               value={(node.data as { label: string }).label}
               onChange={(e) => updateNodeData(nodeId, { label: e.target.value })}
             />
@@ -223,7 +223,7 @@ function EdgeInspector({ edgeId }: { edgeId: string }) {
         <Field>
           <FieldLabel>Label</FieldLabel>
           <FieldControl>
-            <Input
+            <Input size="sm"
               value={data.label ?? ""}
               placeholder="Shown in a glass pill"
               onChange={(e) => updateEdgeData(edgeId, { label: e.target.value || undefined })}
@@ -273,7 +273,7 @@ function DocInspector() {
         <Field>
           <FieldLabel>Title</FieldLabel>
           <FieldControl>
-            <Input value={meta.title} onChange={(e) => setMeta({ title: e.target.value })} />
+            <Input size="sm" value={meta.title} onChange={(e) => setMeta({ title: e.target.value })} />
           </FieldControl>
         </Field>
         <Field>
@@ -295,7 +295,7 @@ function DocInspector() {
         <Button variant="outline" size="sm" className="w-full" onClick={tidy}>
           Tidy layout
         </Button>
-        <p className="text-xs leading-relaxed text-muted-foreground">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           Select a node or edge to edit it. Double-click any text on the canvas to rename in place.
         </p>
       </SidePanelSectionContent>

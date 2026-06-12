@@ -80,7 +80,7 @@ function MermaidImportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           className="h-56 resize-none font-mono text-[13px] leading-relaxed"
         />
         {errors.map((err, i) => (
-          <p key={i} className="font-mono text-xs text-status-error">
+          <p key={i} className="font-mono text-sm text-status-error">
             {err}
           </p>
         ))}
@@ -188,7 +188,7 @@ function ImageImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange
                 Paste a screenshot (⌘V), drop an image here, or <span className="underline">browse…</span>
               </span>
             )}
-            <span className="text-xs">PNG, JPEG, WebP, or GIF</span>
+            <span className="text-sm">PNG, JPEG, WebP, or GIF</span>
           </button>
           <input
             ref={fileRef}
@@ -227,7 +227,7 @@ function ImageImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange
             />
           )}
 
-          {error && <p className="font-mono text-xs text-status-error">{error}</p>}
+          {error && <p className="font-mono text-sm text-status-error">{error}</p>}
         </div>
 
         <DialogFooter>
@@ -299,7 +299,7 @@ function HeaderBar({
       </button>
       <Separator orientation="vertical" className="h-5" />
       <Select value="" onValueChange={loadExample}>
-        <SelectTrigger className="w-44">
+        <SelectTrigger size="sm" className="w-44">
           <SelectValue placeholder="Examples…" />
         </SelectTrigger>
         <SelectContent>

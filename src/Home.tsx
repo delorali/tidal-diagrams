@@ -41,7 +41,7 @@ function DocThumb({ doc }: { doc: DiagramDoc }) {
   const rects = doc.nodes.map((n) => ({ n, pos: absPos(n), size: sizeOf(n) }));
   if (rects.length === 0) {
     return (
-      <div className="flex h-36 items-center justify-center text-xs text-muted-foreground">
+      <div className="flex h-36 items-center justify-center text-sm text-muted-foreground">
         Empty diagram
       </div>
     );
@@ -205,7 +205,7 @@ export function HomePage({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground"
+                      className="text-muted-foreground"
                       onClick={() => {
                         duplicateInLibrary(entry.docId);
                         refresh();
@@ -216,7 +216,7 @@ export function HomePage({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground hover:text-status-error"
+                      className="text-muted-foreground hover:text-status-error"
                       onClick={() => {
                         removeFromLibrary(entry.docId);
                         refresh();
