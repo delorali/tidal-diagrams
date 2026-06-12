@@ -133,6 +133,8 @@ export function Canvas() {
         connectionMode={ConnectionMode.Loose}
         nodesFocusable={false}
         edgesFocusable={false}
+        selectionKeyCode="Shift"
+        multiSelectionKeyCode={["Shift", "Meta"]}
         connectionLineStyle={{ stroke: "var(--stroke-connector)", strokeWidth: 1 }}
         fitView
         fitViewOptions={{ padding: 0.15 }}

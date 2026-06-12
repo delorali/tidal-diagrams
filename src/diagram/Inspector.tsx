@@ -316,10 +316,45 @@ function TrashIcon() {
   );
 }
 
+function MultiSelectInspector({ nodeCount, edgeCount }: { nodeCount: number; edgeCount: number }) {
+  const parts = [
+    nodeCount > 0 && `${nodeCount} node${nodeCount === 1 ? "" : "s"}`,
+    edgeCount > 0 && `${edgeCount} edge${edgeCount === 1 ? "" : "s"}`,
+  ].filter(Boolean);
+  return (
+    <SidePanelSection>
+      <SidePanelSectionContent className="space-y-2">
+        <p className="font-sans text-sm text-foreground">{parts.join(" and ")} selected</p>
+        <p className="font-sans text-sm leading-relaxed text-muted-foreground">
+          Drag any selected node to move the whole selection, or press ⌫ to delete it. Select a
+          single item to edit its properties.
+        </p>
+      </SidePanelSectionContent>
+    </SidePanelSection>
+  );
+}
+
 export function Inspector() {
-  const selectedNodeId = useDiagramStore((s) => s.nodes.find((n) => n.selected)?.id);
-  const selectedEdgeId = useDiagramStore((s) => s.edges.find((e) => e.selected)?.id);
+  const selectedNodeIds = useDiagramStore((s) =>
+    s.nodes.filter((n) => n.selected).map((n) => n.id).join(","),
+  );
+  const selectedEdgeIds = useDiagramStore((s) =>
+    s.edges.filter((e) => e.selected).map((e) => e.id).join(","),
+  );
   const deleteSelection = useDiagramStore((s) => s.deleteSelection);
+
+  const nodeIds = selectedNodeIds ? selectedNodeIds.split(",") : [];
+  const edgeIds = selectedEdgeIds ? selectedEdgeIds.split(",") : [];
+  const total = nodeIds.length + edgeIds.length;
+  const isMulti = total > 1;
+
+  const title = isMulti
+    ? `${total} selected`
+    : nodeIds.length === 1
+      ? "Node"
+      : edgeIds.length === 1
+        ? "Edge"
+        : "Diagram";
 
   return (
     <SidePanel
@@ -328,14 +363,14 @@ export function Inspector() {
       className="absolute inset-y-0 right-0 z-20 !h-full overflow-y-auto border-l border-border bg-sidebar"
     >
       <SidePanelHeader>
-        <SidePanelTitle>{selectedNodeId ? "Node" : selectedEdgeId ? "Edge" : "Diagram"}</SidePanelTitle>
-        {(selectedNodeId || selectedEdgeId) && (
+        <SidePanelTitle>{title}</SidePanelTitle>
+        {total > 0 && (
           <SidePanelHeaderActions>
             <IconButton
               variant="ghost"
               tone="destructive"
               size="sm"
-              aria-label={selectedNodeId ? "Delete node" : "Delete edge"}
+              aria-label={isMulti ? `Delete ${total} items` : nodeIds.length ? "Delete node" : "Delete edge"}
               onClick={deleteSelection}
             >
               <TrashIcon />
@@ -344,10 +379,12 @@ export function Inspector() {
         )}
       </SidePanelHeader>
       <SidePanelBody>
-        {selectedNodeId ? (
-          <NodeInspector nodeId={selectedNodeId} />
-        ) : selectedEdgeId ? (
-          <EdgeInspector edgeId={selectedEdgeId} />
+        {isMulti ? (
+          <MultiSelectInspector nodeCount={nodeIds.length} edgeCount={edgeIds.length} />
+        ) : nodeIds.length === 1 ? (
+          <NodeInspector nodeId={nodeIds[0]} />
+        ) : edgeIds.length === 1 ? (
+          <EdgeInspector edgeId={edgeIds[0]} />
         ) : (
           <DocInspector />
         )}

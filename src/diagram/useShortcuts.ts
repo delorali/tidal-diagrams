@@ -22,6 +22,11 @@ export function useShortcuts(enabled = true) {
         else undo();
         return;
       }
+      if (mod && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+        return;
+      }
       if (mod && e.key.toLowerCase() === "d") {
         e.preventDefault();
         useDiagramStore.getState().duplicateSelection();

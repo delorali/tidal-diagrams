@@ -152,6 +152,14 @@ textarea {
   background: var(--surface-canvas);
 }
 
+/* Shift-drag selection box + multi-selection bounds, in Tidal focus colors */
+.react-flow__selection,
+.react-flow__nodesselection-rect {
+  background: rgb(200 101 246 / 0.06);
+  border: 1px solid var(--border-focus);
+  border-radius: 4px;
+}
+
 .react-flow__node {
   cursor: grab;
 }
