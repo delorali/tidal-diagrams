@@ -292,7 +292,7 @@ function HeaderBar({
   };
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-sidebar px-4">
       <button className="flex items-center gap-2" onClick={onGoHome} aria-label="Back to home">
         <span className="font-sans text-sm font-semibold">Tidal Diagrams</span>
         <Badge variant="secondary">beta</Badge>

@@ -311,7 +311,7 @@ export function Inspector() {
     <SidePanel
       side="right"
       width={280}
-      className="absolute inset-y-0 right-0 z-20 !h-full overflow-y-auto border-l border-border bg-background"
+      className="absolute inset-y-0 right-0 z-20 !h-full overflow-y-auto border-l border-border bg-sidebar"
     >
       <SidePanelHeader>
         <SidePanelTitle>{selectedNodeId ? "Node" : selectedEdgeId ? "Edge" : "Diagram"}</SidePanelTitle>

@@ -107,7 +107,7 @@ export function TidalEdge(props: EdgeProps) {
         markerEnd={markerEnd}
         markerStart={markerStart}
         style={{
-          stroke: selected ? "var(--border-focus)" : "var(--diagram-edge)",
+          stroke: selected ? "var(--border-focus)" : "var(--stroke-connector)",
           strokeWidth: selected ? 1.5 : 1,
           strokeDasharray: data.dotted ? "2.5 4" : undefined,
         }}

@@ -15,7 +15,7 @@ export const EDGE_MARKER = {
   type: MarkerType.Arrow,
   width: 18,
   height: 18,
-  color: "var(--diagram-edge)",
+  color: "var(--stroke-connector)",
 } as const;
 
 /** Re-derive presentation fields that depend on the edge set / data. */

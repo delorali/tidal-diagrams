@@ -75,7 +75,7 @@ function DocThumb({ doc }: { doc: DiagramDoc }) {
             y1={s.y}
             x2={t.x}
             y2={t.y}
-            stroke="var(--diagram-edge)"
+            stroke="var(--stroke-connector)"
             strokeWidth={Math.max(1.5, (maxX - minX) / 300)}
           />
         );
@@ -88,8 +88,8 @@ function DocThumb({ doc }: { doc: DiagramDoc }) {
           width={size.w}
           height={size.h}
           rx={n.type === "tidalPill" ? size.h / 2 : 10}
-          fill={n.type === "tidalGroup" ? "none" : "var(--diagram-node-bg)"}
-          stroke="var(--diagram-node-border)"
+          fill={n.type === "tidalGroup" ? "none" : "var(--surface-raised)"}
+          stroke="var(--surface-border)"
           strokeWidth={Math.max(1.5, (maxX - minX) / 300)}
         />
       ))}
@@ -132,7 +132,7 @@ export function HomePage({
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
-      <header className="flex h-14 shrink-0 items-center gap-2 px-6">
+      <header className="flex h-14 shrink-0 items-center gap-2 bg-sidebar px-6">
         <span className="font-sans text-sm font-semibold">Tidal Diagrams</span>
         <Badge variant="secondary">beta</Badge>
         <div className="ml-auto flex items-center gap-2">

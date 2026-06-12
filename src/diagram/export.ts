@@ -13,7 +13,7 @@ function captureSetup(rf: ReactFlowInstance): { el: HTMLElement; options: Captur
   const el = document.querySelector<HTMLElement>(".react-flow__viewport");
   if (!el) throw new Error("Canvas not found");
 
-  const canvasBg = getComputedStyle(document.documentElement).getPropertyValue("--diagram-canvas").trim();
+  const canvasBg = getComputedStyle(document.documentElement).getPropertyValue("--surface-canvas").trim();
 
   const options: CaptureOptions = {
     backgroundColor: canvasBg || "#ffffff",

@@ -133,7 +133,7 @@ export function Canvas() {
         connectionMode={ConnectionMode.Loose}
         nodesFocusable={false}
         edgesFocusable={false}
-        connectionLineStyle={{ stroke: "var(--diagram-edge)", strokeWidth: 1 }}
+        connectionLineStyle={{ stroke: "var(--stroke-connector)", strokeWidth: 1 }}
         fitView
         fitViewOptions={{ padding: 0.15 }}
         minZoom={0.2}
@@ -150,7 +150,7 @@ export function Canvas() {
         }}
         onPaneClick={() => setSpawnMenu(null)}
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--diagram-dots)" />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--canvas-dot)" />
       </ReactFlow>
       <SpawnMenu />
     </div>
