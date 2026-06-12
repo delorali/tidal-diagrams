@@ -407,7 +407,9 @@ export default function App() {
   const seenRevision = useRef<number | null>(null);
   useEffect(() => {
     if (seenRevision.current === null) {
-      seenRevision.current = docRevision;
+      // read live state, not the render-bound value: the first-run seed effect
+      // has already bumped the revision by the time this effect runs
+      seenRevision.current = useDiagramStore.getState().docRevision;
       return;
     }
     if (docRevision !== seenRevision.current) {
