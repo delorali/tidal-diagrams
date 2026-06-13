@@ -269,10 +269,17 @@ export const useDiagramStore = create<DiagramState>()(
               if (n.id !== id) return n;
               const d = n.data as CardData;
               const label = d.label || d.header?.title || "Node";
+              // carry the fill across card/cylinder; pills are always ghost-like
+              const fill = type === "tidalPill" ? undefined : d.fill;
               return {
                 ...n,
                 type,
-                data: type === "tidalCard" ? { label, rows: d.rows ?? [] } : { label },
+                data:
+                  type === "tidalCard"
+                    ? { label, rows: d.rows ?? [], fill }
+                    : type === "tidalCylinder"
+                      ? { label, fill }
+                      : { label },
                 // drop stale measurements so the new shape re-measures cleanly
                 measured: undefined,
               };

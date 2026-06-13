@@ -8,10 +8,15 @@ export interface RowData {
   value: string;
 }
 
+/** Constrained surface treatment for a node — not free-form fill. */
+export type NodeFill = "solid" | "outline" | "ghost";
+
 export interface CardData extends Record<string, unknown> {
   header?: { title: string; suffix?: string };
   label?: string;
   rows: RowData[];
+  /** Surface treatment; defaults to "solid". */
+  fill?: NodeFill;
 }
 
 export interface PillData extends Record<string, unknown> {
@@ -20,6 +25,8 @@ export interface PillData extends Record<string, unknown> {
 
 export interface CylinderData extends Record<string, unknown> {
   label: string;
+  /** Surface treatment; defaults to "solid". */
+  fill?: NodeFill;
 }
 
 export interface GroupData extends Record<string, unknown> {

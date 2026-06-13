@@ -54,10 +54,23 @@ textarea {
   min-width: 200px;
   max-width: 320px;
   min-height: 44px;
-  background: var(--surface-raised);
   border: 1px solid var(--surface-border);
   border-radius: 10px;
+}
+
+/* Fill treatments (solid is the default) */
+.tidal-diagram-card[data-fill="solid"] {
+  background: var(--surface-raised);
   box-shadow: var(--surface-shadow);
+}
+.tidal-diagram-card[data-fill="outline"] {
+  background: transparent;
+}
+.tidal-diagram-card[data-fill="ghost"] {
+  background: var(--surface-glass);
+  border-color: var(--surface-glass-border);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .tidal-glass-pill {

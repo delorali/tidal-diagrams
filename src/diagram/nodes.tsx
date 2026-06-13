@@ -78,11 +78,11 @@ function InlineText({
 
 /** Composable card: optional header band, divider-separated rows, mono body label. */
 export function TidalCardNode({ id, data, selected }: NodeProps) {
-  const { header, label, rows = [] } = data as CardData;
+  const { header, label, rows = [], fill = "solid" } = data as CardData;
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
 
   return (
-    <div className="tidal-diagram-card">
+    <div className="tidal-diagram-card" data-fill={fill}>
       {header && (
         <div className="flex items-baseline gap-1.5 px-4 py-3 text-left font-sans text-sm leading-[20px]">
           <InlineText
@@ -161,19 +161,25 @@ export function TidalPillNode({ id, selected, data }: NodeProps) {
 
 /** Database cylinder with stacked-disk arcs, drawn in SVG. */
 export function TidalCylinderNode({ id, selected, data }: NodeProps) {
-  const { label } = data as CylinderData;
+  const { label, fill = "solid" } = data as CylinderData;
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const w = 188;
   const h = 170;
   const ry = 33;
+  // SVG can't use backdrop-blur, so ghost falls back to a translucent fill.
+  const bodyFill =
+    fill === "outline" ? "transparent" : fill === "ghost" ? "var(--surface-glass)" : "var(--surface-raised)";
+  const topFill =
+    fill === "outline" ? "transparent" : fill === "ghost" ? "var(--surface-glass)" : "var(--surface-canvas)";
   return (
     <div style={{ width: w, height: h }} className="relative">
       <svg width={w} height={h} className="tidal-cylinder absolute inset-0 overflow-visible">
         <path
           d={`M1 ${ry} v${h - ry * 2} a${w / 2 - 1} ${ry} 0 0 0 ${w - 2} 0 v-${h - ry * 2}`}
           className="cyl-body"
+          style={{ fill: bodyFill }}
         />
-        <ellipse cx={w / 2} cy={ry} rx={w / 2 - 1} ry={ry - 1} className="cyl-top" />
+        <ellipse cx={w / 2} cy={ry} rx={w / 2 - 1} ry={ry - 1} className="cyl-top" style={{ fill: topFill }} />
         <path d={`M1 ${h * 0.42} a${w / 2 - 1} ${ry} 0 0 0 ${w - 2} 0`} className="cyl-arc" />
         <path d={`M1 ${h * 0.62} a${w / 2 - 1} ${ry} 0 0 0 ${w - 2} 0`} className="cyl-arc" />
       </svg>

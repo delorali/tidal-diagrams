@@ -20,9 +20,11 @@ import {
   SidePanelSectionTitle,
   SidePanelTitle,
   Switch,
+  ToggleGroup,
+  ToggleGroupItem,
   Label,
 } from "@liquidai/react";
-import type { CardData, EdgeData, TidalNodeType } from "./doc";
+import type { CardData, EdgeData, NodeFill, TidalNodeType } from "./doc";
 import { newId } from "./doc";
 import { useDiagramStore } from "./store";
 
@@ -35,6 +37,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
   const data = node.data as CardData;
   const isCard = node.type === "tidalCard";
   const isGroup = node.type === "tidalGroup";
+  const hasFill = isCard || node.type === "tidalCylinder";
 
   return (
     <>
@@ -57,6 +60,33 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
                 <SelectItem value="tidalCylinder">Database</SelectItem>
               </SelectContent>
             </Select>
+          </SidePanelSectionContent>
+        </SidePanelSection>
+      )}
+
+      {hasFill && (
+        <SidePanelSection>
+          <SidePanelSectionHeader>
+            <SidePanelSectionTitle>Fill</SidePanelSectionTitle>
+          </SidePanelSectionHeader>
+          <SidePanelSectionContent>
+            <ToggleGroup
+              type="single"
+              size="sm"
+              value={(data.fill ?? "solid") as NodeFill}
+              onValueChange={(v) => v && updateNodeData(nodeId, { fill: v as NodeFill })}
+              className="w-full justify-start"
+            >
+              <ToggleGroupItem value="solid" className="flex-1">
+                Solid
+              </ToggleGroupItem>
+              <ToggleGroupItem value="outline" className="flex-1">
+                Outline
+              </ToggleGroupItem>
+              <ToggleGroupItem value="ghost" className="flex-1">
+                Ghost
+              </ToggleGroupItem>
+            </ToggleGroup>
           </SidePanelSectionContent>
         </SidePanelSection>
       )}
