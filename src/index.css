@@ -15,9 +15,10 @@
   --surface-raised: var(--background); /* node/card fill on the canvas */
   --surface-border: var(--border-default);
   --surface-shadow: 0px 2px 10px 0px rgb(0 0 0 / 0.05);
-  --surface-glass: rgb(255 255 255 / 0.2); /* gap: no translucent surface token */
-  --surface-glass-border: rgb(82 82 82 / 0.4); /* gap */
-  --surface-glass-foreground: var(--foreground-muted);
+  /* Edge-label chip: opaque so it masks the connector running behind it. */
+  --surface-chip: var(--surface-canvas);
+  --surface-chip-border: rgb(82 82 82 / 0.4); /* gap */
+  --surface-chip-foreground: var(--foreground-muted);
   --stroke-connector: #c7c7c7; /* gap: no wire/connector stroke token */
   --canvas-dot: rgb(0 0 0 / 0.07); /* gap: no canvas grid token */
 }
@@ -26,8 +27,7 @@
   --surface-canvas: var(--background); /* inverted vs light — see note above */
   --surface-raised: var(--card);
   --surface-shadow: 0px 2px 10px 0px rgb(0 0 0 / 0.25);
-  --surface-glass: rgb(23 23 23 / 0.35);
-  --surface-glass-border: rgb(255 255 255 / 0.22);
+  --surface-chip-border: rgb(255 255 255 / 0.22);
   --stroke-connector: #525252;
   --canvas-dot: rgb(255 255 255 / 0.06);
 }
@@ -72,12 +72,10 @@ textarea {
 }
 
 .tidal-glass-pill {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  background: var(--surface-glass);
-  border: 1px solid var(--surface-glass-border);
+  background: var(--surface-chip);
+  border: 1px solid var(--surface-chip-border);
   border-radius: 8px;
-  color: var(--surface-glass-foreground);
+  color: var(--surface-chip-foreground);
 }
 
 .tidal-diagram-group {
@@ -149,7 +147,7 @@ textarea {
   border-radius: 9999px;
   border: 1px solid var(--surface-border);
   background: var(--surface-canvas);
-  color: var(--surface-glass-foreground);
+  color: var(--surface-chip-foreground);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   transition: color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
 }
