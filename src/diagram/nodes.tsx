@@ -166,11 +166,11 @@ export function TidalCylinderNode({ id, selected, data }: NodeProps) {
   const w = 188;
   const h = 170;
   const ry = 33;
-  // SVG can't use backdrop-blur, so ghost falls back to a translucent fill.
-  const bodyFill =
-    fill === "outline" ? "transparent" : fill === "ghost" ? "var(--surface-glass)" : "var(--surface-raised)";
-  const topFill =
-    fill === "outline" ? "transparent" : fill === "ghost" ? "var(--surface-glass)" : "var(--surface-canvas)";
+  // A cylinder is defined by its silhouette, so the stroke always stays;
+  // outline and ghost both just drop the fill.
+  const filled = fill === "solid";
+  const bodyFill = filled ? "var(--surface-raised)" : "transparent";
+  const topFill = filled ? "var(--surface-canvas)" : "transparent";
   return (
     <div style={{ width: w, height: h }} className="relative">
       <svg width={w} height={h} className="tidal-cylinder absolute inset-0 overflow-visible">

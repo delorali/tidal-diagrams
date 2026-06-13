@@ -67,10 +67,8 @@ textarea {
   background: transparent;
 }
 .tidal-diagram-card[data-fill="ghost"] {
-  background: var(--surface-glass);
-  border-color: var(--surface-glass-border);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: transparent;
+  border-color: transparent;
 }
 
 .tidal-glass-pill {
