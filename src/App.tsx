@@ -40,6 +40,7 @@ import { copyDiagramPng, exportDiagram } from "./diagram/export";
 import { newId, stripForExport } from "./diagram/doc";
 import { startLibrarySync } from "./diagram/library";
 import { HomePage } from "./Home";
+import { ComposeView } from "./ComposeView";
 import { redo, undo, useDiagramStore } from "./diagram/store";
 import { useShortcuts } from "./diagram/useShortcuts";
 import { EXAMPLES } from "./examples";
@@ -377,7 +378,7 @@ function HeaderBar({
 export default function App() {
   const [mermaidOpen, setMermaidOpen] = useState(false);
   const [imageOpen, setImageOpen] = useState(false);
-  const [view, setView] = useState<"home" | "editor">("home");
+  const [view, setView] = useState<"home" | "editor" | "compose">("home");
   const [dark, setDark] = useState(false);
   const loadDoc = useDiagramStore((s) => s.loadDoc);
   const jsonFileRef = useRef<HTMLInputElement>(null);
@@ -434,10 +435,13 @@ export default function App() {
             <HomePage
               dark={dark}
               onDarkChange={setDark}
+              onNewFromText={() => setView("compose")}
               onOpenMermaid={() => setMermaidOpen(true)}
               onOpenImage={() => setImageOpen(true)}
               onImportJson={() => jsonFileRef.current?.click()}
             />
+          ) : view === "compose" ? (
+            <ComposeView onClose={() => setView("home")} />
           ) : (
             <>
               <HeaderBar

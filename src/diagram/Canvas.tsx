@@ -10,18 +10,8 @@ import {
 } from "@xyflow/react";
 import { useDiagramStore } from "./store";
 import type { TidalEdgeT, TidalNode } from "./doc";
-import { TidalCardNode, TidalCylinderNode, TidalGroupNode, TidalPillNode } from "./nodes";
-import { TidalEdge } from "./TidalEdge";
+import { nodeTypes, edgeTypes } from "./flowTypes";
 import { NODE_TYPE_OPTIONS } from "./NodePlusToolbar";
-
-const nodeTypes = {
-  tidalCard: TidalCardNode,
-  tidalCylinder: TidalCylinderNode,
-  tidalPill: TidalPillNode,
-  tidalGroup: TidalGroupNode,
-};
-
-const edgeTypes = { tidal: TidalEdge };
 
 /** Floating menu shown when a connection is dropped on empty canvas. */
 function SpawnMenu() {

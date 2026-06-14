@@ -175,3 +175,47 @@ textarea {
 .react-flow__node:active {
   cursor: grabbing;
 }
+
+/* Quick-text editor token highlighting */
+.cm-qt-node {
+  background: var(--surface-raised);
+  border: 1px solid var(--surface-border);
+  border-radius: 4px;
+  padding: 1px 3px;
+}
+.cm-qt-op {
+  color: var(--border-focus);
+  font-weight: 600;
+}
+.cm-qt-label {
+  color: var(--surface-chip-foreground);
+  background: var(--surface-canvas);
+  border: 1px solid var(--surface-chip-border);
+  border-radius: 6px;
+  padding: 0 4px;
+}
+.cm-qt-tag {
+  color: var(--tone-accent, #cd82f0);
+  font-weight: 500;
+}
+.cm-qt-slash {
+  color: var(--foreground-muted);
+  opacity: 0.6;
+}
+.cm-qt-group {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.cm-qt-comment {
+  color: var(--foreground-muted);
+  font-style: italic;
+  opacity: 0.7;
+}
+.cm-qt-direction {
+  color: var(--foreground-muted);
+  font-weight: 500;
+}
+.cm-qt-error {
+  text-decoration: underline wavy var(--status-error);
+  text-underline-offset: 3px;
+}

@@ -100,12 +100,14 @@ function DocThumb({ doc }: { doc: DiagramDoc }) {
 export function HomePage({
   dark,
   onDarkChange,
+  onNewFromText,
   onOpenMermaid,
   onOpenImage,
   onImportJson,
 }: {
   dark: boolean;
   onDarkChange: (v: boolean) => void;
+  onNewFromText: () => void;
   onOpenMermaid: () => void;
   onOpenImage: () => void;
   onImportJson: () => void;
@@ -152,10 +154,13 @@ export function HomePage({
           from a screenshot.
         </p>
         <div className="mt-8 flex items-center gap-3">
-          <Button size="lg" onClick={newDiagram}>
-            New diagram
+          <Button size="lg" onClick={onNewFromText}>
+            New from text
           </Button>
           <span className="font-sans text-sm text-muted-foreground">or</span>
+          <Button variant="outline" size="lg" onClick={newDiagram}>
+            Blank canvas
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="lg">

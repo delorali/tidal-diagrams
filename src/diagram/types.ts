@@ -1,3 +1,5 @@
+import type { NodeFill } from "./doc";
+
 export type NodeShape = "card" | "cylinder" | "pill";
 
 export interface SpecNode {
@@ -7,6 +9,8 @@ export interface SpecNode {
   /** Optional secondary line(s), rendered in mono below the title. */
   subtitle?: string;
   shape: NodeShape;
+  /** Surface treatment (Quick-text #tags); cards/cylinders only. */
+  fill?: NodeFill;
   /** Containing subgraph id, if any. */
   parent?: string;
 }
@@ -17,7 +21,10 @@ export interface SpecEdge {
   target: string;
   label?: string;
   dotted: boolean;
+  /** Arrowhead at the target end. */
   arrow: boolean;
+  /** Arrowhead at the source end (for "both ends" style). */
+  arrowStart?: boolean;
 }
 
 export interface SpecGroup {

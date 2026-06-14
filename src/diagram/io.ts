@@ -57,8 +57,11 @@ export function specToDoc(spec: DiagramSpec, title = "Imported diagram"): Diagra
                 ? { header: { title: node.label }, label: node.subtitle }
                 : { label: node.label }),
               rows: [],
+              ...(node.fill ? { fill: node.fill } : {}),
             } satisfies CardData)
-          : { label: node.label };
+          : type === "tidalCylinder"
+            ? { label: node.label, ...(node.fill ? { fill: node.fill } : {}) }
+            : { label: node.label };
       return {
         id: node.id,
         type,
@@ -74,7 +77,7 @@ export function specToDoc(spec: DiagramSpec, title = "Imported diagram"): Diagra
     source: edge.source,
     target: edge.target,
     type: "tidal",
-    data: { label: edge.label, dotted: edge.dotted, arrow: edge.arrow },
+    data: { label: edge.label, dotted: edge.dotted, arrow: edge.arrow, arrowStart: edge.arrowStart },
   }));
 
   const positioned = tidyLayout(sortByParent(nodes), edges, spec.direction, estimateSize);
