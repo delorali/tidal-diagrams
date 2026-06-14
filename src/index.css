@@ -176,6 +176,25 @@ textarea {
   cursor: grabbing;
 }
 
+/* Floating text-panel toggle (top-left of the canvas) */
+.tidal-text-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: var(--card);
+  color: var(--foreground-muted);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.tidal-text-toggle:hover {
+  color: var(--foreground);
+  border-color: var(--border-focus);
+}
+
 /* Quick-text editor token highlighting */
 .cm-qt-node {
   background: var(--surface-raised);

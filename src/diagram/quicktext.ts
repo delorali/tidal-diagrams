@@ -14,7 +14,7 @@ export interface QuickTextResult {
 }
 
 /** Stable id from a label's leading title segment, so references match declarations. */
-function slug(text: string): string {
+export function slug(text: string): string {
   const s = text
     .trim()
     .toLowerCase()

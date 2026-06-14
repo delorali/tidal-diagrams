@@ -17,6 +17,8 @@ import {
   type TidalNodeType,
 } from "./doc";
 import { normalizeEdges } from "./io";
+import { parseQuickText } from "./quicktext";
+import { reconcileQuickText } from "./sync";
 import { measuredOrEstimate, tidyLayout } from "./tidy";
 
 export type Side = "l" | "r" | "t" | "b";
@@ -57,6 +59,7 @@ export interface DiagramState {
   deleteSelection: () => void;
   duplicateSelection: () => void;
   tidy: () => void;
+  applyQuickText: (source: string) => void;
   loadDoc: (doc: DiagramDoc) => void;
   setMeta: (patch: Partial<DocMeta>) => void;
   setHoveredNode: (id: string | null) => void;
@@ -343,6 +346,23 @@ export const useDiagramStore = create<DiagramState>()(
           commit(`tidy-${newId()}`);
           set({
             nodes: tidyLayout(get().nodes, get().edges, get().meta.direction, measuredOrEstimate),
+          });
+        },
+
+        applyQuickText: (source) => {
+          const { spec } = parseQuickText(source);
+          const { nodes, edges, meta } = get();
+          const { nodes: nextNodes, edges: nextEdges } = reconcileQuickText(spec, {
+            meta,
+            nodes,
+            edges,
+          });
+          // coalesce a typing burst into one undo step
+          commit("quicktext");
+          set({
+            nodes: sortByParent(nextNodes),
+            edges: nextEdges,
+            meta: { ...meta, direction: spec.direction },
           });
         },
 

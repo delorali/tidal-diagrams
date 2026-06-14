@@ -8,9 +8,12 @@ import {
   type DecorationSet,
   type ViewUpdate,
 } from "@codemirror/view";
-import { EditorState, type Range } from "@codemirror/state";
+import { Annotation, EditorState, type Range } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { parseQuickText } from "./quicktext";
+
+/** Marks a programmatic value update so it isn't echoed back as a user edit. */
+const External = Annotation.define<boolean>();
 
 const opMark = Decoration.mark({ class: "cm-qt-op" });
 const labelMark = Decoration.mark({ class: "cm-qt-label" });
@@ -145,7 +148,10 @@ export function QuickTextEditor({
           cmPlaceholder(placeholder ?? ""),
           editorTheme,
           EditorView.updateListener.of((u) => {
-            if (u.docChanged) onChangeRef.current(u.state.doc.toString());
+            if (!u.docChanged) return;
+            // ignore programmatic (External) updates — only report user typing
+            if (u.transactions.some((t) => t.annotation(External))) return;
+            onChangeRef.current(u.state.doc.toString());
           }),
         ],
       }),
@@ -162,7 +168,10 @@ export function QuickTextEditor({
     if (!view) return;
     const current = view.state.doc.toString();
     if (value !== current) {
-      view.dispatch({ changes: { from: 0, to: current.length, insert: value } });
+      view.dispatch({
+        changes: { from: 0, to: current.length, insert: value },
+        annotations: External.of(true),
+      });
     }
   }, [value]);
 

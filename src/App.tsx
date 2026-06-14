@@ -40,7 +40,7 @@ import { copyDiagramPng, exportDiagram } from "./diagram/export";
 import { newId, stripForExport } from "./diagram/doc";
 import { startLibrarySync } from "./diagram/library";
 import { HomePage } from "./Home";
-import { ComposeView } from "./ComposeView";
+import { TextPanel } from "./diagram/TextPanel";
 import { redo, undo, useDiagramStore } from "./diagram/store";
 import { useShortcuts } from "./diagram/useShortcuts";
 import { EXAMPLES } from "./examples";
@@ -378,7 +378,8 @@ function HeaderBar({
 export default function App() {
   const [mermaidOpen, setMermaidOpen] = useState(false);
   const [imageOpen, setImageOpen] = useState(false);
-  const [view, setView] = useState<"home" | "editor" | "compose">("home");
+  const [view, setView] = useState<"home" | "editor">("home");
+  const [textPanelOpen, setTextPanelOpen] = useState(false);
   const [dark, setDark] = useState(false);
   const loadDoc = useDiagramStore((s) => s.loadDoc);
   const jsonFileRef = useRef<HTMLInputElement>(null);
@@ -435,13 +436,10 @@ export default function App() {
             <HomePage
               dark={dark}
               onDarkChange={setDark}
-              onNewFromText={() => setView("compose")}
               onOpenMermaid={() => setMermaidOpen(true)}
               onOpenImage={() => setImageOpen(true)}
               onImportJson={() => jsonFileRef.current?.click()}
             />
-          ) : view === "compose" ? (
-            <ComposeView onClose={() => setView("home")} />
           ) : (
             <>
               <HeaderBar
@@ -457,6 +455,19 @@ export default function App() {
                 <main className="absolute inset-y-0 left-0 right-[280px]">
                   <Canvas />
                   <Toolbar />
+                  {!textPanelOpen && (
+                    <button
+                      className="tidal-text-toggle absolute left-3 top-3 z-10"
+                      aria-label="Open diagram text"
+                      onClick={() => setTextPanelOpen(true)}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M8 6h12M8 12h12M8 18h8" />
+                        <path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+                      </svg>
+                    </button>
+                  )}
+                  {textPanelOpen && <TextPanel onClose={() => setTextPanelOpen(false)} />}
                 </main>
                 <Inspector />
               </div>
