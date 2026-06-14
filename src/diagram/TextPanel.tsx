@@ -97,8 +97,10 @@ export function TextPanel({ onClose }: { onClose: () => void }) {
           </IconButton>
         </div>
       </div>
-      <div className="min-h-0 flex-1 bg-background">
-        <QuickTextEditor value={source} onChange={onUserChange} placeholder={PLACEHOLDER} />
+      <div className="min-h-0 flex-1 p-3">
+        <div className="h-full overflow-hidden rounded-lg border border-input bg-card focus-within:border-focus">
+          <QuickTextEditor value={source} onChange={onUserChange} placeholder={PLACEHOLDER} />
+        </div>
       </div>
       <div className="shrink-0 border-t border-border px-3 py-2 font-sans text-xs text-muted-foreground">
         {errorCount > 0
