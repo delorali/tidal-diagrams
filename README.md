@@ -12,6 +12,26 @@ npm install
 npm run dev
 ```
 
+## Use these skills
+
+Two [Claude Code](https://claude.com/claude-code) skills build and export diagrams here. The app
+is deployed at **https://delorali.github.io/tidal-diagrams**, so you can use them **without
+cloning** — install the plugin and they target the hosted app automatically:
+
+```text
+/plugin marketplace add delorali/tidal-diagrams
+/plugin install tidal-diagram-skills@tidal-diagrams
+```
+
+- **`/tidal-diagram-skills:diagram <description>`** — turns a prompt into a diagram and prints a
+  link that loads it in the app (e.g. `/tidal-diagram-skills:diagram a checkout flow with retries`).
+  Add hints like "left to right" or "fit 4:3".
+- **`/tidal-diagram-skills:diagram-to-figma <figma /design/ URL>`** — rebuilds the current diagram
+  as editable Figma layers (needs Claude's Figma integration connected).
+
+Working in this repo, the same skills auto-load as project skills — just `/diagram` and
+`/diagram-to-figma`, no install. Full details in [`.claude/skills/README.md`](.claude/skills/README.md).
+
 ## Editing model
 
 - **Document = source of truth.** The diagram is a JSON doc (nodes/edges/meta) in a zustand store,
