@@ -1,7 +1,7 @@
 import { useReactFlow } from "@xyflow/react";
 import { Button, Separator, Tooltip, TooltipContent, TooltipTrigger } from "@liquidai/react";
 import { useDiagramStore } from "./store";
-import type { TidalNodeType } from "./doc";
+import type { CreatableNodeType } from "./doc";
 
 const GLYPHS: Record<string, React.ReactNode> = {
   node: <rect x="1.5" y="4.5" width="13" height="7" rx="2" />,
@@ -27,7 +27,7 @@ const GLYPHS: Record<string, React.ReactNode> = {
   group: <rect x="1.5" y="1.5" width="13" height="13" rx="3" strokeDasharray="3 2.4" />,
 };
 
-const TOOLS: { key: string; name: string; type: TidalNodeType; preset?: "header" | "rows" }[] = [
+const TOOLS: { key: string; name: string; type: CreatableNodeType; preset?: "header" | "rows" }[] = [
   { key: "node", name: "Node", type: "tidalCard" },
   { key: "header", name: "Node with header", type: "tidalCard", preset: "header" },
   { key: "rows", name: "Node with rows", type: "tidalCard", preset: "rows" },
@@ -42,7 +42,7 @@ export function Toolbar() {
   const tidy = useDiagramStore((s) => s.tidy);
   const { screenToFlowPosition } = useReactFlow();
 
-  const addAtCenter = (type: TidalNodeType, preset?: "header" | "rows") => {
+  const addAtCenter = (type: CreatableNodeType, preset?: "header" | "rows") => {
     const center = screenToFlowPosition({
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,

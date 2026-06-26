@@ -9,6 +9,7 @@ import {
   type TidalNode,
 } from "./doc";
 import { estimateSize, tidyLayout } from "./tidy";
+import { NODE_COLORS } from "./nodeColors";
 import type { DiagramSpec } from "./types";
 
 export const EDGE_MARKER = {
@@ -21,17 +22,26 @@ export const EDGE_MARKER = {
 /** Re-derive presentation fields that depend on the edge set / data. */
 export function normalizeEdges(edges: TidalEdgeT[]): TidalEdgeT[] {
   const pairs = new Set(edges.map((e) => `${e.source}|${e.target}`));
-  return edges.map((edge) => ({
-    ...edge,
-    markerEnd: edge.data?.arrow ? EDGE_MARKER : undefined,
-    markerStart: edge.data?.arrowStart ? EDGE_MARKER : undefined,
-    data: {
-      dotted: false,
-      arrow: true,
-      ...edge.data,
-      curveOffset: pairs.has(`${edge.target}|${edge.source}`) ? 36 : 0,
-    },
-  }));
+  return edges.map((edge) => {
+    // Tinted edges get a matching arrowhead (the hue's mid border shade reads in
+    // both themes; the line stroke itself is theme-resolved in TidalEdge).
+    const marker = edge.data?.color
+      ? { ...EDGE_MARKER, color: NODE_COLORS[edge.data.color].border[1] }
+      : EDGE_MARKER;
+    return {
+      ...edge,
+      markerEnd: edge.data?.arrow ? marker : undefined,
+      markerStart: edge.data?.arrowStart ? marker : undefined,
+      data: {
+        dotted: false,
+        arrow: true,
+        ...edge.data,
+        // Keep an explicit curveOffset (e.g. sequence self-loops); otherwise bow
+        // bidirectional pairs apart so they don't overlap.
+        curveOffset: edge.data?.curveOffset ?? (pairs.has(`${edge.target}|${edge.source}`) ? 36 : 0),
+      },
+    };
+  });
 }
 
 /** Convert a parsed Mermaid spec into a positioned document. */

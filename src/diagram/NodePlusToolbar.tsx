@@ -7,10 +7,10 @@ import {
   DropdownMenuTrigger,
 } from "@liquidai/react";
 import { useDiagramStore, type Side } from "./store";
-import type { TidalNodeType } from "./doc";
+import type { CreatableNodeType } from "./doc";
 
 export const NODE_TYPE_OPTIONS: {
-  type: Exclude<TidalNodeType, "tidalGroup">;
+  type: Exclude<CreatableNodeType, "tidalGroup">;
   preset?: "header" | "rows";
   name: string;
   hint: string;

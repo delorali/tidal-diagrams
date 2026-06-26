@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Handle, NodeResizer, Position, type NodeProps } from "@xyflow/react";
 import { cn } from "@liquidai/react";
 import type { CardData, CylinderData, GroupData, PillData } from "./doc";
+import { nodeColorVars } from "./nodeColors";
 import { useDiagramStore } from "./store";
 import { NodePlus } from "./NodePlusToolbar";
 
@@ -77,12 +78,32 @@ function InlineText({
 }
 
 /** Composable card: optional header band, divider-separated rows, mono body label. */
-export function TidalCardNode({ id, data, selected }: NodeProps) {
-  const { header, label, rows = [], fill = "solid" } = data as CardData;
+export function TidalCardNode({ id, data, selected, width, height }: NodeProps) {
+  const { header, label, rows = [], fill = "solid", color } = data as CardData;
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  // Per-axis: a fixed (resized) axis fills the wrapper; a hugging axis sizes to
+  // content. Width also lifts the content max-width cap so it can grow past 320px.
+  const fixedW = width != null;
+  const fixedH = height != null;
 
   return (
-    <div className="tidal-diagram-card" data-fill={fill}>
+    <div
+      className="tidal-diagram-card"
+      data-fill={fill}
+      {...(color ? { "data-color": "" } : {})}
+      style={{
+        ...(fixedW ? { width: "100%", maxWidth: "none" } : {}),
+        ...(fixedH ? { height: "100%" } : {}),
+        ...(color ? nodeColorVars(color) : {}),
+      }}
+    >
+      <NodeResizer
+        isVisible={!!selected}
+        minWidth={200}
+        minHeight={44}
+        lineClassName="!border-focus"
+        handleClassName="!bg-card !border-focus"
+      />
       {header && (
         <div className="flex items-baseline gap-1.5 px-4 py-3 text-left font-sans text-sm leading-[20px]">
           <InlineText
@@ -147,11 +168,26 @@ export function TidalCardNode({ id, data, selected }: NodeProps) {
 }
 
 /** Glass pill, same treatment as edge labels but as a standalone node. */
-export function TidalPillNode({ id, selected, data }: NodeProps) {
-  const { label } = data as PillData;
+export function TidalPillNode({ id, selected, data, width, height }: NodeProps) {
+  const { label, color } = data as PillData;
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   return (
-    <div className="tidal-glass-pill px-[10px] py-2 text-center font-sans text-[13px] leading-[21px]">
+    <div
+      className="tidal-glass-pill flex items-center justify-center px-[10px] py-2 text-center font-sans text-[13px] leading-[21px]"
+      {...(color ? { "data-color": "" } : {})}
+      style={{
+        ...(width != null ? { width: "100%" } : {}),
+        ...(height != null ? { height: "100%" } : {}),
+        ...(color ? nodeColorVars(color) : {}),
+      }}
+    >
+      <NodeResizer
+        isVisible={!!selected}
+        minWidth={56}
+        minHeight={32}
+        lineClassName="!border-focus"
+        handleClassName="!bg-card !border-focus"
+      />
       <InlineText value={label} onCommit={(v) => updateNodeData(id, { label: v })} />
       <Ports />
       <NodePlus nodeId={id} selected={!!selected} />
@@ -160,26 +196,35 @@ export function TidalPillNode({ id, selected, data }: NodeProps) {
 }
 
 /** Database cylinder with stacked-disk arcs, drawn in SVG. */
-export function TidalCylinderNode({ id, selected, data }: NodeProps) {
-  const { label, fill = "solid" } = data as CylinderData;
+export function TidalCylinderNode({ id, selected, data, width, height }: NodeProps) {
+  const { label, fill = "solid", color } = data as CylinderData;
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
-  const w = 188;
-  const h = 170;
-  const ry = 33;
-  // A cylinder is defined by its silhouette, so the stroke always stays;
-  // outline and ghost both just drop the fill.
-  const filled = fill === "solid";
-  const bodyFill = filled ? "var(--surface-raised)" : "transparent";
-  const topFill = filled ? "var(--surface-canvas)" : "transparent";
+  const w = width ?? 188;
+  const h = height ?? 170;
+  const ry = Math.min(33, h / 4); // disk depth scales down on short cylinders
+  // Fills are CSS-driven (via data-fill / data-color) so color + dark mode work
+  // the same way as cards. The silhouette stroke always stays.
   return (
-    <div style={{ width: w, height: h }} className="relative">
+    <div
+      className="relative tidal-cylinder-node"
+      data-fill={fill}
+      {...(color ? { "data-color": "" } : {})}
+      style={{ width: w, height: h, ...(color ? nodeColorVars(color) : {}) }}
+    >
+      <NodeResizer
+        isVisible={!!selected}
+        minWidth={120}
+        minHeight={90}
+        keepAspectRatio={false}
+        lineClassName="!border-focus"
+        handleClassName="!bg-card !border-focus"
+      />
       <svg width={w} height={h} className="tidal-cylinder absolute inset-0 overflow-visible">
         <path
           d={`M1 ${ry} v${h - ry * 2} a${w / 2 - 1} ${ry} 0 0 0 ${w - 2} 0 v-${h - ry * 2}`}
           className="cyl-body"
-          style={{ fill: bodyFill }}
         />
-        <ellipse cx={w / 2} cy={ry} rx={w / 2 - 1} ry={ry - 1} className="cyl-top" style={{ fill: topFill }} />
+        <ellipse cx={w / 2} cy={ry} rx={w / 2 - 1} ry={ry - 1} className="cyl-top" />
         <path d={`M1 ${h * 0.42} a${w / 2 - 1} ${ry} 0 0 0 ${w - 2} 0`} className="cyl-arc" />
         <path d={`M1 ${h * 0.62} a${w / 2 - 1} ${ry} 0 0 0 ${w - 2} 0`} className="cyl-arc" />
       </svg>
@@ -203,5 +248,33 @@ export function TidalGroupNode({ id, data, selected }: NodeProps) {
         <InlineText value={label} placeholder="Group" onCommit={(v) => updateNodeData(id, { label: v })} />
       </div>
     </div>
+  );
+}
+
+/**
+ * Invisible attachment point for sequence-diagram lifelines and messages.
+ * Has zero visual footprint and ignores pointer events; the single loose-mode
+ * handle just lets the floating TidalEdge resolve its endpoints from node bounds.
+ */
+export function TidalAnchorNode() {
+  return (
+    <div style={{ width: 1, height: 1, pointerEvents: "none" }}>
+      <Handle type="source" position={Position.Top} id="c" style={{ opacity: 0, width: 1, height: 1, minWidth: 1, minHeight: 1, border: 0 }} />
+    </div>
+  );
+}
+
+/**
+ * Sequence-diagram activation bar — a thin vertical block on a lifeline marking
+ * the span a participant is active. Sized entirely by the node's style.
+ */
+export function TidalActivationNode({ selected }: NodeProps) {
+  return (
+    <div
+      className={cn(
+        "h-full w-full rounded-[3px] border bg-muted",
+        selected ? "border-focus" : "border-border",
+      )}
+    />
   );
 }

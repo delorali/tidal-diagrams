@@ -52,6 +52,7 @@ export function Canvas() {
   const onNodesChange = useDiagramStore((s) => s.onNodesChange);
   const onEdgesChange = useDiagramStore((s) => s.onEdgesChange);
   const onConnect = useDiagramStore((s) => s.onConnect);
+  const drawFloatingEdge = useDiagramStore((s) => s.drawFloatingEdge);
   const endDrag = useDiagramStore((s) => s.endDrag);
   const setHoveredNode = useDiagramStore((s) => s.setHoveredNode);
   const setSpawnMenu = useDiagramStore((s) => s.setSpawnMenu);
@@ -97,15 +98,11 @@ export function Canvas() {
         return;
       }
 
-      // Dropped on empty canvas: offer to spawn a connected node there.
-      const rect = wrapperRef.current?.getBoundingClientRect();
-      setSpawnMenu({
-        screen: { x: clientX - (rect?.left ?? 0), y: clientY - (rect?.top ?? 0) },
-        flow: screenToFlowPosition({ x: clientX, y: clientY }),
-        fromNodeId: from.id,
-      });
+      // Dropped on empty canvas: draw the edge to a floating point (free anchor),
+      // which can later be dragged onto a node or repositioned.
+      drawFloatingEdge(from.id, screenToFlowPosition({ x: clientX, y: clientY }));
     },
-    [screenToFlowPosition, setSpawnMenu, onConnect],
+    [screenToFlowPosition, drawFloatingEdge, onConnect],
   );
 
   return (

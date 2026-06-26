@@ -1,5 +1,6 @@
 import type { NodeFill } from "./doc";
 import type { Direction, DiagramSpec, NodeShape, SpecEdge, SpecGroup, SpecNode } from "./types";
+import { detectUnsupportedDiagramType, unsupportedMessage, type UnsupportedDiagram } from "./diagramType";
 
 export interface QuickTextDiagnostic {
   /** 0-based line number. */
@@ -11,6 +12,8 @@ export interface QuickTextDiagnostic {
 export interface QuickTextResult {
   spec: DiagramSpec;
   diagnostics: QuickTextDiagnostic[];
+  /** Set when the source is a Mermaid diagram type Tidal can't render. */
+  unsupported?: UnsupportedDiagram;
 }
 
 /** Stable id from a label's leading title segment, so references match declarations. */
@@ -73,6 +76,18 @@ function leadingIndent(line: string): number {
 
 export function parseQuickText(source: string): QuickTextResult {
   const diagnostics: QuickTextDiagnostic[] = [];
+
+  // Guard: an unsupported Mermaid diagram type would otherwise be mangled into
+  // a pile of disconnected nodes. Bail with a clear message and an empty spec.
+  const unsupported = detectUnsupportedDiagramType(source);
+  if (unsupported) {
+    return {
+      spec: { direction: "LR", nodes: [], edges: [], groups: [] },
+      diagnostics: [{ line: 0, message: unsupportedMessage(unsupported), severity: "error" }],
+      unsupported,
+    };
+  }
+
   const nodes = new Map<string, SpecNode>();
   const groups: SpecGroup[] = [];
   const edges: SpecEdge[] = [];

@@ -23,15 +23,104 @@ import {
   ToggleGroup,
   ToggleGroupItem,
   Label,
+  cn,
 } from "@liquidai/react";
-import type { CardData, EdgeData, NodeFill, TidalNodeType } from "./doc";
+import type { CardData, CreatableNodeType, EdgeData, NodeFill } from "./doc";
 import { newId } from "./doc";
+import { NODE_COLOR_ORDER, swatchColor, type NodeColor } from "./nodeColors";
 import { useDiagramStore } from "./store";
+
+function ColorSwatches({ value, onChange }: { value?: NodeColor; onChange: (c?: NodeColor) => void }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      <button
+        type="button"
+        title="Default"
+        aria-label="Default color"
+        onClick={() => onChange(undefined)}
+        className={cn(
+          "flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground",
+          !value && "ring-2 ring-focus ring-offset-1 ring-offset-sidebar",
+        )}
+      >
+        <svg width="11" height="11" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="1.4">
+          <line x1="2.5" y1="9.5" x2="9.5" y2="2.5" />
+        </svg>
+      </button>
+      {NODE_COLOR_ORDER.map((hue) => (
+        <button
+          key={hue}
+          type="button"
+          title={hue}
+          aria-label={hue}
+          onClick={() => onChange(hue)}
+          style={{ backgroundColor: swatchColor(hue) }}
+          className={cn(
+            "h-5 w-5 rounded-full border border-black/10",
+            value === hue && "ring-2 ring-focus ring-offset-1 ring-offset-sidebar",
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SizeRow({
+  label,
+  fixed,
+  value,
+  onHug,
+  onFix,
+}: {
+  label: string;
+  fixed: boolean;
+  value: number;
+  onHug: () => void;
+  onFix: (n: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Label className="w-12 shrink-0 text-sm">{label}</Label>
+      <ToggleGroup
+        type="single"
+        size="sm"
+        value={fixed ? "fixed" : "hug"}
+        onValueChange={(v) => {
+          if (v === "hug") onHug();
+          else if (v === "fixed") onFix(Math.max(1, value || 100));
+        }}
+        className="justify-start"
+      >
+        <ToggleGroupItem value="hug" className="flex-1">
+          Hug
+        </ToggleGroupItem>
+        <ToggleGroupItem value="fixed" className="flex-1">
+          Fixed
+        </ToggleGroupItem>
+      </ToggleGroup>
+      {fixed && (
+        <Input
+          size="sm"
+          type="number"
+          className="w-16"
+          value={value}
+          onChange={(e) => {
+            const n = parseInt(e.target.value, 10);
+            if (!Number.isNaN(n) && n > 0) onFix(n);
+          }}
+        />
+      )}
+    </div>
+  );
+}
 
 function NodeInspector({ nodeId }: { nodeId: string }) {
   const node = useDiagramStore((s) => s.nodes.find((n) => n.id === nodeId));
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const convertNodeType = useDiagramStore((s) => s.convertNodeType);
+  const bringToFront = useDiagramStore((s) => s.bringToFront);
+  const sendToBack = useDiagramStore((s) => s.sendToBack);
+  const setNodeSize = useDiagramStore((s) => s.setNodeSize);
   if (!node) return null;
 
   const data = node.data as CardData;
@@ -41,6 +130,46 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
 
   return (
     <>
+      <SidePanelSection>
+        <SidePanelSectionHeader>
+          <SidePanelSectionTitle>Arrange</SidePanelSectionTitle>
+        </SidePanelSectionHeader>
+        <SidePanelSectionContent>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1" onClick={bringToFront}>
+              Bring to front
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1" onClick={sendToBack}>
+              Send to back
+            </Button>
+          </div>
+        </SidePanelSectionContent>
+      </SidePanelSection>
+
+      {!isGroup && (
+        <SidePanelSection>
+          <SidePanelSectionHeader>
+            <SidePanelSectionTitle>Size</SidePanelSectionTitle>
+          </SidePanelSectionHeader>
+          <SidePanelSectionContent className="space-y-2">
+            <SizeRow
+              label="Width"
+              fixed={node.width != null}
+              value={Math.round((node.width as number | undefined) ?? node.measured?.width ?? 0)}
+              onHug={() => setNodeSize(nodeId, { width: null })}
+              onFix={(n) => setNodeSize(nodeId, { width: n })}
+            />
+            <SizeRow
+              label="Height"
+              fixed={node.height != null}
+              value={Math.round((node.height as number | undefined) ?? node.measured?.height ?? 0)}
+              onHug={() => setNodeSize(nodeId, { height: null })}
+              onFix={(n) => setNodeSize(nodeId, { height: n })}
+            />
+          </SidePanelSectionContent>
+        </SidePanelSection>
+      )}
+
       {!isGroup && (
         <SidePanelSection>
           <SidePanelSectionHeader>
@@ -49,7 +178,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
           <SidePanelSectionContent>
             <Select
               value={node.type}
-              onValueChange={(t) => convertNodeType(nodeId, t as Exclude<TidalNodeType, "tidalGroup">)}
+              onValueChange={(t) => convertNodeType(nodeId, t as Exclude<CreatableNodeType, "tidalGroup">)}
             >
               <SelectTrigger size="sm">
                 <SelectValue />
@@ -87,6 +216,17 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
                 Ghost
               </ToggleGroupItem>
             </ToggleGroup>
+          </SidePanelSectionContent>
+        </SidePanelSection>
+      )}
+
+      {!isGroup && (
+        <SidePanelSection>
+          <SidePanelSectionHeader>
+            <SidePanelSectionTitle>Color</SidePanelSectionTitle>
+          </SidePanelSectionHeader>
+          <SidePanelSectionContent>
+            <ColorSwatches value={data.color} onChange={(c) => updateNodeData(nodeId, { color: c })} />
           </SidePanelSectionContent>
         </SidePanelSection>
       )}
@@ -289,6 +429,12 @@ function EdgeInspector({ edgeId }: { edgeId: string }) {
           <Label className="text-sm">Dotted</Label>
           <Switch checked={data.dotted} onCheckedChange={(v) => updateEdgeData(edgeId, { dotted: v })} />
         </div>
+        <Field>
+          <FieldLabel>Color</FieldLabel>
+          <FieldControl>
+            <ColorSwatches value={data.color} onChange={(c) => updateEdgeData(edgeId, { color: c })} />
+          </FieldControl>
+        </Field>
       </SidePanelSectionContent>
     </SidePanelSection>
   );

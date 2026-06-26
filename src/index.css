@@ -71,11 +71,48 @@ textarea {
   border-color: transparent;
 }
 
+/* Per-node color tint. Inline --nc-* vars carry light+dark hex pairs; the .dark
+   rules pick the dark value. Higher specificity than the plain fill rules above. */
+.tidal-diagram-card[data-color][data-fill="solid"] {
+  background: var(--nc-fill);
+  border-color: var(--nc-border);
+}
+.dark .tidal-diagram-card[data-color][data-fill="solid"] {
+  background: var(--nc-fill-d);
+  border-color: var(--nc-border-d);
+}
+.tidal-diagram-card[data-color][data-fill="outline"] {
+  border-color: var(--nc-border);
+}
+.dark .tidal-diagram-card[data-color][data-fill="outline"] {
+  border-color: var(--nc-border-d);
+}
+/* Ghost: no fill/border — recolor the text (and its descendants) instead. */
+.tidal-diagram-card[data-color][data-fill="ghost"],
+.tidal-diagram-card[data-color][data-fill="ghost"] * {
+  color: var(--nc-ghost);
+}
+.dark .tidal-diagram-card[data-color][data-fill="ghost"],
+.dark .tidal-diagram-card[data-color][data-fill="ghost"] * {
+  color: var(--nc-ghost-d);
+}
+
 .tidal-glass-pill {
   background: var(--surface-chip);
   border: 1px solid var(--surface-chip-border);
   border-radius: 8px;
   color: var(--surface-chip-foreground);
+}
+/* Colored label (pill): filled chip in the chosen hue. */
+.tidal-glass-pill[data-color] {
+  background: var(--nc-fill);
+  border-color: var(--nc-border);
+  color: var(--nc-ghost);
+}
+.dark .tidal-glass-pill[data-color] {
+  background: var(--nc-fill-d);
+  border-color: var(--nc-border-d);
+  color: var(--nc-ghost-d);
 }
 
 .tidal-diagram-group {
@@ -101,6 +138,39 @@ textarea {
   fill: none;
   stroke: var(--surface-border);
   stroke-width: 1;
+}
+/* Cylinder fill treatments: outline/ghost drop the body+top fill (silhouette stays). */
+.tidal-cylinder-node[data-fill="outline"] .cyl-body,
+.tidal-cylinder-node[data-fill="ghost"] .cyl-body,
+.tidal-cylinder-node[data-fill="outline"] .cyl-top,
+.tidal-cylinder-node[data-fill="ghost"] .cyl-top {
+  fill: transparent;
+}
+/* Colored cylinder: hue fill + stroke (light, then dark). */
+.tidal-cylinder-node[data-color][data-fill="solid"] .cyl-body,
+.tidal-cylinder-node[data-color][data-fill="solid"] .cyl-top {
+  fill: var(--nc-fill);
+}
+.dark .tidal-cylinder-node[data-color][data-fill="solid"] .cyl-body,
+.dark .tidal-cylinder-node[data-color][data-fill="solid"] .cyl-top {
+  fill: var(--nc-fill-d);
+}
+.tidal-cylinder-node[data-color] .cyl-body,
+.tidal-cylinder-node[data-color] .cyl-top,
+.tidal-cylinder-node[data-color] .cyl-arc {
+  stroke: var(--nc-border);
+}
+.dark .tidal-cylinder-node[data-color] .cyl-body,
+.dark .tidal-cylinder-node[data-color] .cyl-top,
+.dark .tidal-cylinder-node[data-color] .cyl-arc {
+  stroke: var(--nc-border-d);
+}
+/* Ghost cylinder: recolor the label text. */
+.tidal-cylinder-node[data-color][data-fill="ghost"] .text-foreground {
+  color: var(--nc-ghost);
+}
+.dark .tidal-cylinder-node[data-color][data-fill="ghost"] .text-foreground {
+  color: var(--nc-ghost-d);
 }
 
 /* Connection points: hidden until the node is hovered or selected */

@@ -31,7 +31,7 @@ export function TextPanel({ onClose }: { onClose: () => void }) {
   const applyTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const serializeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const { diagnostics } = useMemo(() => parseQuickText(source), [source]);
+  const { diagnostics, unsupported } = useMemo(() => parseQuickText(source), [source]);
   const errorCount = diagnostics.filter((d) => d.severity === "error").length;
 
   // doc → text: when the canvas changes structure, rewrite the panel text.
@@ -102,10 +102,18 @@ export function TextPanel({ onClose }: { onClose: () => void }) {
           <QuickTextEditor value={source} onChange={onUserChange} placeholder={PLACEHOLDER} />
         </div>
       </div>
-      <div className="shrink-0 border-t border-border px-3 py-2 font-sans text-xs text-muted-foreground">
-        {errorCount > 0
-          ? `${errorCount} line${errorCount === 1 ? "" : "s"} not understood`
-          : "Synced with the canvas · positions are kept as you type"}
+      <div
+        className={`shrink-0 border-t border-border px-3 py-2 font-sans text-xs ${
+          unsupported || errorCount > 0 ? "text-status-error" : "text-muted-foreground"
+        }`}
+      >
+        {unsupported
+          ? unsupported.keyword === "sequenceDiagram"
+            ? "Sequence diagrams: use Toolbar → Import Mermaid to add one to the canvas."
+            : `${unsupported.label} aren't supported yet — Tidal renders flowcharts.`
+          : errorCount > 0
+            ? `${errorCount} line${errorCount === 1 ? "" : "s"} not understood`
+            : "Synced with the canvas · positions are kept as you type"}
       </div>
     </div>
   );

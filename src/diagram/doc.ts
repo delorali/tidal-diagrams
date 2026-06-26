@@ -1,4 +1,5 @@
 import type { Edge, Node } from "@xyflow/react";
+import type { NodeColor } from "./nodeColors";
 
 export const DOC_VERSION = 1;
 
@@ -17,21 +18,33 @@ export interface CardData extends Record<string, unknown> {
   rows: RowData[];
   /** Surface treatment; defaults to "solid". */
   fill?: NodeFill;
+  /** Optional Tailwind-hue tint; undefined keeps the default Tidal styling. */
+  color?: NodeColor;
 }
 
 export interface PillData extends Record<string, unknown> {
   label: string;
+  /** Optional Tailwind-hue tint. */
+  color?: NodeColor;
 }
 
 export interface CylinderData extends Record<string, unknown> {
   label: string;
   /** Surface treatment; defaults to "solid". */
   fill?: NodeFill;
+  /** Optional Tailwind-hue tint. */
+  color?: NodeColor;
 }
 
 export interface GroupData extends Record<string, unknown> {
   label: string;
 }
+
+/** Invisible sequence-diagram attachment point; carries no presentation data. */
+export type AnchorData = Record<string, unknown>;
+
+/** Sequence-diagram activation bar; sized via node style, no data of its own. */
+export type ActivationData = Record<string, unknown>;
 
 export interface EdgeData extends Record<string, unknown> {
   label?: string;
@@ -42,11 +55,27 @@ export interface EdgeData extends Record<string, unknown> {
   arrowStart?: boolean;
   /** Set at import for bidirectional pairs; bows the curve sideways. */
   curveOffset?: number;
+  /** Sequence-message label: rendered as plain text above the line, not a pill. */
+  seqLabel?: boolean;
+  /** Optional Tailwind-hue tint for the stroke + label. */
+  color?: NodeColor;
+  /** Freeform routing points (flow coords). When present the edge is a polyline
+   * through these instead of a bezier; endpoints attach facing the nearest point. */
+  waypoints?: { x: number; y: number }[];
 }
 
-export type TidalNodeType = "tidalCard" | "tidalPill" | "tidalCylinder" | "tidalGroup";
+export type TidalNodeType =
+  | "tidalCard"
+  | "tidalPill"
+  | "tidalCylinder"
+  | "tidalGroup"
+  | "tidalAnchor"
+  | "tidalActivation";
 
-export type TidalNode = Node<CardData | PillData | CylinderData | GroupData>;
+/** Node types a user can spawn/convert — excludes internal sequence primitives. */
+export type CreatableNodeType = Exclude<TidalNodeType, "tidalAnchor" | "tidalActivation">;
+
+export type TidalNode = Node<CardData | PillData | CylinderData | GroupData | AnchorData | ActivationData>;
 export type TidalEdgeT = Edge<EdgeData>;
 
 export interface DocMeta {
@@ -66,7 +95,7 @@ export interface DiagramDoc {
 
 export const newId = () => crypto.randomUUID().slice(0, 8);
 
-export function createNode(type: TidalNodeType, position: { x: number; y: number }): TidalNode {
+export function createNode(type: CreatableNodeType, position: { x: number; y: number }): TidalNode {
   const base = { id: newId(), position, type };
   switch (type) {
     case "tidalCard":

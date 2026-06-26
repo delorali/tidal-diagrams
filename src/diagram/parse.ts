@@ -1,8 +1,11 @@
 import type { DiagramSpec, Direction, NodeShape, SpecEdge, SpecGroup, SpecNode } from "./types";
+import { detectUnsupportedDiagramType, unsupportedMessage, type UnsupportedDiagram } from "./diagramType";
 
 export interface ParseResult {
   spec: DiagramSpec;
   errors: string[];
+  /** Set when the source is a Mermaid diagram type Tidal can't render. */
+  unsupported?: UnsupportedDiagram;
 }
 
 /**
@@ -23,6 +26,17 @@ export interface ParseResult {
  *   %% comment
  */
 export function parseMermaid(source: string): ParseResult {
+  // Guard: refuse Mermaid diagram types we can't render rather than shredding
+  // them into disconnected flowchart nodes.
+  const unsupported = detectUnsupportedDiagramType(source);
+  if (unsupported) {
+    return {
+      spec: { direction: "LR", nodes: [], edges: [], groups: [] },
+      errors: [unsupportedMessage(unsupported)],
+      unsupported,
+    };
+  }
+
   const errors: string[] = [];
   const nodes = new Map<string, SpecNode>();
   const groups: SpecGroup[] = [];
@@ -69,7 +83,7 @@ export function parseMermaid(source: string): ParseResult {
     if (/^(classDef|class|style|linkStyle|click|accTitle|accDescr)\b/i.test(line)) continue;
 
     // edge or node statement
-    if (!parseStatement(line, i + 1)) {
+    if (!parseStatement(line)) {
       errors.push(`Line ${i + 1}: could not parse "${line}"`);
     }
   }
@@ -112,7 +126,7 @@ export function parseMermaid(source: string): ParseResult {
     return ids;
   }
 
-  function parseStatement(line: string, _lineNo: number): boolean {
+  function parseStatement(line: string): boolean {
     // Split into endpoint / link / endpoint / link / ... chains.
     // Link forms: -->, ---, -.->, -.-, ==>, ===, with optional |label| or inline `-- text -->`.
     const linkRe =

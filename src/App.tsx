@@ -35,6 +35,9 @@ import { Inspector } from "./diagram/Inspector";
 import { Toolbar } from "./diagram/Toolbar";
 import { describeApiError, imageToMermaid } from "./diagram/imageImport";
 import { parseMermaid } from "./diagram/parse";
+import { detectUnsupportedDiagramType } from "./diagram/diagramType";
+import { parseSequence } from "./diagram/sequence";
+import { sequenceToDoc } from "./diagram/sequenceLayout";
 import { docToJson, jsonToDoc, specToDoc } from "./diagram/io";
 import { copyDiagramPng, exportDiagram } from "./diagram/export";
 import { newId, stripForExport } from "./diagram/doc";
@@ -51,6 +54,22 @@ function MermaidImportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const loadDoc = useDiagramStore((s) => s.loadDoc);
 
   const doImport = () => {
+    // Sequence diagrams take a different path: parse → lay out as editable
+    // lifelines/messages/notes → load. Everything else is a flowchart.
+    if (detectUnsupportedDiagramType(source)?.keyword === "sequenceDiagram") {
+      const { spec, warnings } = parseSequence(source);
+      if (spec.participants.length === 0) {
+        setErrors(["No participants found in the sequence diagram."]);
+        return;
+      }
+      loadDoc(sequenceToDoc(spec));
+      setErrors(warnings.map((w) => `Line ${w.line}: ${w.message}`));
+      if (warnings.length === 0) {
+        onOpenChange(false);
+        setSource("");
+      }
+      return;
+    }
     const { spec, errors } = parseMermaid(source);
     if (spec.nodes.length === 0) {
       setErrors(errors.length ? errors : ["No nodes found in the source."]);
@@ -70,7 +89,7 @@ function MermaidImportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         <DialogHeader>
           <DialogTitle>Import Mermaid</DialogTitle>
           <DialogDescription>
-            Paste a Mermaid flowchart. It replaces the current diagram and becomes fully editable.
+            Paste a Mermaid flowchart or sequence diagram. It replaces the current diagram and becomes fully editable.
           </DialogDescription>
         </DialogHeader>
         <Textarea
@@ -143,8 +162,11 @@ function ImageImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange
     try {
       const result = await imageToMermaid(apiKey.trim(), file);
       setMermaid(result.mermaid);
-      const { errors } = parseMermaid(result.mermaid);
-      if (errors.length) setError(`Transcribed with warnings: ${errors[0]}`);
+      // Sequence diagrams are valid here; only surface flowchart parse warnings.
+      if (detectUnsupportedDiagramType(result.mermaid)?.keyword !== "sequenceDiagram") {
+        const { errors } = parseMermaid(result.mermaid);
+        if (errors.length) setError(`Transcribed with warnings: ${errors[0]}`);
+      }
     } catch (err) {
       setError(describeApiError(err));
     } finally {
@@ -153,6 +175,17 @@ function ImageImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange
   };
 
   const doImport = () => {
+    if (detectUnsupportedDiagramType(mermaid)?.keyword === "sequenceDiagram") {
+      const { spec } = parseSequence(mermaid);
+      if (spec.participants.length === 0) {
+        setError("No participants found in the generated sequence diagram.");
+        return;
+      }
+      loadDoc(sequenceToDoc(spec, file?.name.replace(/\.\w+$/, "") || "Sequence diagram"));
+      onOpenChange(false);
+      pickFile(null);
+      return;
+    }
     const { spec, errors } = parseMermaid(mermaid);
     if (spec.nodes.length === 0) {
       setError(errors[0] ?? "No nodes found in the generated code.");

@@ -14,7 +14,7 @@ import {
   type EdgeData,
   type TidalEdgeT,
   type TidalNode,
-  type TidalNodeType,
+  type CreatableNodeType,
 } from "./doc";
 import { normalizeEdges } from "./io";
 import { parseQuickText } from "./quicktext";
@@ -50,12 +50,26 @@ export interface DiagramState {
   onNodesChange: (changes: NodeChange<TidalNode>[]) => void;
   onEdgesChange: (changes: EdgeChange<TidalEdgeT>[]) => void;
   onConnect: (connection: Connection) => void;
-  addNode: (type: TidalNodeType, position: { x: number; y: number }, preset?: "header" | "rows") => string;
-  spawnConnectedNode: (fromNodeId: string, side: Side, type: TidalNodeType, preset?: "header" | "rows") => void;
-  spawnAtPoint: (fromNodeId: string | undefined, flow: { x: number; y: number }, type: TidalNodeType, preset?: "header" | "rows") => void;
+  addNode: (type: CreatableNodeType, position: { x: number; y: number }, preset?: "header" | "rows") => string;
+  spawnConnectedNode: (fromNodeId: string, side: Side, type: CreatableNodeType, preset?: "header" | "rows") => void;
+  spawnAtPoint: (fromNodeId: string | undefined, flow: { x: number; y: number }, type: CreatableNodeType, preset?: "header" | "rows") => void;
   updateNodeData: (id: string, patch: Partial<CardData> | ((data: CardData) => CardData)) => void;
-  convertNodeType: (id: string, type: Exclude<TidalNodeType, "tidalGroup">) => void;
+  convertNodeType: (id: string, type: Exclude<CreatableNodeType, "tidalGroup">) => void;
+  /** Set a fixed dimension, or pass null for that axis to "hug" content (re-measure). */
+  setNodeSize: (id: string, patch: { width?: number | null; height?: number | null }) => void;
   updateEdgeData: (id: string, patch: Partial<EdgeData>) => void;
+  /** Topmost connectable node containing a flow point, or null (for edge hit-tests). */
+  nodeAtPoint: (x: number, y: number, exclude?: string[]) => string | null;
+  /** Detach an edge end onto a new free anchor (creates the anchor at `point`). */
+  detachEdgeEnd: (edgeId: string, end: "source" | "target", anchorId: string, point: { x: number; y: number }) => void;
+  /** Move a free anchor (a detached edge endpoint) while dragging it. */
+  moveAnchor: (anchorId: string, point: { x: number; y: number }) => void;
+  /** Re-attach an edge end to a real node, pruning the freed anchor. */
+  reconnectEdgeEnd: (edgeId: string, end: "source" | "target", nodeId: string) => void;
+  /** Draw a new edge from a node to a floating point (free anchor). */
+  drawFloatingEdge: (fromNodeId: string, point: { x: number; y: number }) => void;
+  bringToFront: () => void;
+  sendToBack: () => void;
   deleteSelection: () => void;
   duplicateSelection: () => void;
   tidy: () => void;
@@ -86,6 +100,26 @@ const PRESETS: Record<string, Partial<CardData>> = {
 const SPAWN_GAP = 90;
 const HISTORY_LIMIT = 100;
 const COALESCE_MS = 800;
+
+const CONNECTABLE = new Set(["tidalCard", "tidalPill", "tidalCylinder"]);
+
+/** Free anchors only exist as edge endpoints; drop any no longer referenced. */
+function pruneVectorAnchors(nodes: TidalNode[], edges: TidalEdgeT[]): TidalNode[] {
+  const used = new Set(edges.flatMap((e) => [e.source, e.target]));
+  return nodes.filter((n) => !(n.type === "tidalAnchor" && (n.data as { vector?: boolean })?.vector && !used.has(n.id)));
+}
+
+/** A free anchor node carrying a detached edge endpoint at a flow point. */
+function vectorAnchor(id: string, point: { x: number; y: number }): TidalNode {
+  return {
+    id,
+    type: "tidalAnchor",
+    position: { x: Math.round(point.x), y: Math.round(point.y) },
+    data: { vector: true },
+    draggable: false,
+    selectable: false,
+  };
+}
 
 // Coalescing bookkeeping for commit() — module-level, never rendered.
 let lastCommitKey: string | null = null;
@@ -279,13 +313,46 @@ export const useDiagramStore = create<DiagramState>()(
                 type,
                 data:
                   type === "tidalCard"
-                    ? { label, rows: d.rows ?? [], fill }
+                    ? { label, rows: d.rows ?? [], fill, color: d.color }
                     : type === "tidalCylinder"
-                      ? { label, fill }
-                      : { label },
-                // drop stale measurements so the new shape re-measures cleanly
+                      ? { label, fill, color: d.color }
+                      : { label, color: d.color },
+                // reset to hug content: drop the old fixed size + stale measurement
+                // so the new shape sizes (and its selection box) to its own content.
+                width: undefined,
+                height: undefined,
                 measured: undefined,
               };
+            }),
+          });
+        },
+
+        setNodeSize: (id, patch) => {
+          commit(`size-${id}`);
+          set({
+            nodes: get().nodes.map((n) => {
+              if (n.id !== id) return n;
+              const next: TidalNode = { ...n };
+              let remeasure = false;
+              if ("width" in patch) {
+                if (patch.width == null) {
+                  next.width = undefined;
+                  remeasure = true;
+                } else {
+                  next.width = patch.width;
+                }
+              }
+              if ("height" in patch) {
+                if (patch.height == null) {
+                  next.height = undefined;
+                  remeasure = true;
+                } else {
+                  next.height = patch.height;
+                }
+              }
+              // Hugging an axis again: drop the stale measurement so RF re-measures.
+              if (remeasure) next.measured = undefined;
+              return next;
             }),
           });
         },
@@ -299,6 +366,75 @@ export const useDiagramStore = create<DiagramState>()(
               ),
             ),
           });
+        },
+
+        nodeAtPoint: (x, y, exclude = []) => {
+          const skip = new Set(exclude);
+          const ns = get().nodes;
+          // Reverse so the topmost (last-painted) node wins overlaps.
+          for (let i = ns.length - 1; i >= 0; i--) {
+            const n = ns[i];
+            if (skip.has(n.id) || !CONNECTABLE.has(n.type ?? "")) continue;
+            const w = n.measured?.width ?? (typeof n.width === "number" ? n.width : 200);
+            const h = n.measured?.height ?? (typeof n.height === "number" ? n.height : 46);
+            if (x >= n.position.x && x <= n.position.x + w && y >= n.position.y && y <= n.position.y + h) {
+              return n.id;
+            }
+          }
+          return null;
+        },
+
+        detachEdgeEnd: (edgeId, end, anchorId, point) => {
+          commit(`detach-${edgeId}-${end}`);
+          const edges = get().edges.map((e) => (e.id === edgeId ? { ...e, [end]: anchorId } : e));
+          const nodes = pruneVectorAnchors([...get().nodes, vectorAnchor(anchorId, point)], edges);
+          set({ nodes: sortByParent(nodes), edges: normalizeEdges(edges) });
+        },
+
+        moveAnchor: (anchorId, point) => {
+          commit(`anchor-${anchorId}`);
+          set({
+            nodes: get().nodes.map((n) =>
+              n.id === anchorId ? { ...n, position: { x: Math.round(point.x), y: Math.round(point.y) } } : n,
+            ),
+          });
+        },
+
+        reconnectEdgeEnd: (edgeId, end, nodeId) => {
+          const edge = get().edges.find((e) => e.id === edgeId);
+          if (!edge) return;
+          const other = end === "source" ? edge.target : edge.source;
+          if (nodeId === other) return; // no self-edges
+          commit(`reconnect-${edgeId}-${end}`);
+          const edges = get().edges.map((e) => (e.id === edgeId ? { ...e, [end]: nodeId } : e));
+          set({ nodes: pruneVectorAnchors(get().nodes, edges), edges: normalizeEdges(edges) });
+        },
+
+        drawFloatingEdge: (fromNodeId, point) => {
+          commit(`draw-${newId()}`);
+          const anchorId = `va-${newId()}`;
+          const edge = createEdge(fromNodeId, anchorId, { arrow: true });
+          set({
+            nodes: sortByParent([...get().nodes, vectorAnchor(anchorId, point)]),
+            edges: normalizeEdges([...get().edges, edge]),
+          });
+        },
+
+        bringToFront: () => {
+          const ns = get().nodes;
+          if (!ns.some((n) => n.selected)) return;
+          const top = Math.max(0, ...ns.map((n) => n.zIndex ?? 0));
+          commit(`z-front-${newId()}`);
+          set({ nodes: ns.map((n) => (n.selected ? { ...n, zIndex: top + 1 } : n)) });
+        },
+
+        sendToBack: () => {
+          const ns = get().nodes;
+          if (!ns.some((n) => n.selected)) return;
+          // Groups sit at -1; keep selected nodes above them but below everything else.
+          const floor = Math.min(0, ...ns.map((n) => n.zIndex ?? 0));
+          commit(`z-back-${newId()}`);
+          set({ nodes: ns.map((n) => (n.selected ? { ...n, zIndex: floor - 1 } : n)) });
         },
 
         deleteSelection: () => {
@@ -318,11 +454,13 @@ export const useDiagramStore = create<DiagramState>()(
               }
             }
           }
+          const keptEdges = edges.filter(
+            (e) => !e.selected && !doomedNodes.has(e.source) && !doomedNodes.has(e.target),
+          );
           set({
-            nodes: nodes.filter((n) => !doomedNodes.has(n.id)),
-            edges: normalizeEdges(
-              edges.filter((e) => !e.selected && !doomedNodes.has(e.source) && !doomedNodes.has(e.target)),
-            ),
+            // Also drop free anchors orphaned by a deleted vector edge.
+            nodes: pruneVectorAnchors(nodes.filter((n) => !doomedNodes.has(n.id)), keptEdges),
+            edges: normalizeEdges(keptEdges),
           });
         },
 
@@ -350,7 +488,10 @@ export const useDiagramStore = create<DiagramState>()(
         },
 
         applyQuickText: (source) => {
-          const { spec } = parseQuickText(source);
+          const { spec, unsupported } = parseQuickText(source);
+          // Unsupported diagram type → keep the canvas intact; the text panel
+          // surfaces the message. Applying an empty spec would wipe the diagram.
+          if (unsupported) return;
           const { nodes, edges, meta } = get();
           const { nodes: nextNodes, edges: nextEdges } = reconcileQuickText(spec, {
             meta,
