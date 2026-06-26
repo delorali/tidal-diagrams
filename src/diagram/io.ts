@@ -8,7 +8,7 @@ import {
   type TidalEdgeT,
   type TidalNode,
 } from "./doc";
-import { estimateSize, tidyLayout } from "./tidy";
+import { estimateSize, layoutForAspect, tidyLayout } from "./tidy";
 import { NODE_COLORS } from "./nodeColors";
 import type { DiagramSpec } from "./types";
 
@@ -44,8 +44,17 @@ export function normalizeEdges(edges: TidalEdgeT[]): TidalEdgeT[] {
   });
 }
 
+export interface SpecToDocOpts {
+  /** Bias the layout toward this content aspect ratio (width / height), best-effort. */
+  aspect?: number;
+}
+
 /** Convert a parsed Mermaid spec into a positioned document. */
-export function specToDoc(spec: DiagramSpec, title = "Imported diagram"): DiagramDoc {
+export function specToDoc(
+  spec: DiagramSpec,
+  title = "Imported diagram",
+  opts: SpecToDocOpts = {},
+): DiagramDoc {
   const nodes: TidalNode[] = [
     ...spec.groups.map(
       (group): TidalNode => ({
@@ -90,7 +99,10 @@ export function specToDoc(spec: DiagramSpec, title = "Imported diagram"): Diagra
     data: { label: edge.label, dotted: edge.dotted, arrow: edge.arrow, arrowStart: edge.arrowStart },
   }));
 
-  const positioned = tidyLayout(sortByParent(nodes), edges, spec.direction, estimateSize);
+  const sorted = sortByParent(nodes);
+  const positioned = opts.aspect
+    ? layoutForAspect(sorted, edges, spec.direction, estimateSize, opts.aspect)
+    : tidyLayout(sorted, edges, spec.direction, estimateSize);
   return {
     meta: { version: DOC_VERSION, title, direction: spec.direction },
     nodes: positioned,

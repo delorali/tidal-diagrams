@@ -49,14 +49,28 @@ export const measuredOrEstimate: SizeOf = (node) =>
  * Dagre auto-layout. Returns a new node array with updated positions
  * (parent-relative) and group dimensions; never mutates inputs.
  */
+export interface LayoutOpts {
+  /** Gap within a rank (perpendicular to the flow). Default 48. */
+  nodesep?: number;
+  /** Gap between ranks (along the flow). Default 72. */
+  ranksep?: number;
+}
+
 export function tidyLayout(
   nodes: TidalNode[],
   edges: TidalEdgeT[],
   direction: Direction,
   sizeOf: SizeOf,
+  opts: LayoutOpts = {},
 ): TidalNode[] {
   const g = new dagre.graphlib.Graph({ compound: true, multigraph: true });
-  g.setGraph({ rankdir: direction, nodesep: 48, ranksep: 72, marginx: 24, marginy: 24 });
+  g.setGraph({
+    rankdir: direction,
+    nodesep: opts.nodesep ?? 48,
+    ranksep: opts.ranksep ?? 72,
+    marginx: 24,
+    marginy: 24,
+  });
   g.setDefaultEdgeLabel(() => ({}));
 
   const groups = nodes.filter((n) => n.type === "tidalGroup");
@@ -117,4 +131,72 @@ export function tidyLayout(
       },
     };
   });
+}
+
+/** Bounding box (w/h) over top-level nodes — group rects already absorb their children. */
+function contentBounds(nodes: TidalNode[], sizeOf: SizeOf): { width: number; height: number } {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const node of nodes) {
+    if (node.parentId) continue; // child positions are parent-relative; the group covers them
+    const w = (node.style?.width as number) ?? sizeOf(node).width;
+    const h = (node.style?.height as number) ?? sizeOf(node).height;
+    minX = Math.min(minX, node.position.x);
+    minY = Math.min(minY, node.position.y);
+    maxX = Math.max(maxX, node.position.x + w);
+    maxY = Math.max(maxY, node.position.y + h);
+  }
+  if (!isFinite(minX)) return { width: 1, height: 1 };
+  return { width: maxX - minX, height: maxY - minY };
+}
+
+/**
+ * Lay out, biasing the separations so the content bounding box approximates a
+ * target aspect ratio (width / height). Dagre is content-driven and never
+ * reflows ranks, so this is best-effort: it shifts the ratio of inter-rank to
+ * intra-rank spacing and keeps the layout whose box is closest to target. A
+ * pure linear chain has a fixed shape and won't move much; branching diagrams
+ * respond well.
+ */
+export function layoutForAspect(
+  nodes: TidalNode[],
+  edges: TidalEdgeT[],
+  direction: Direction,
+  sizeOf: SizeOf,
+  targetAspect: number,
+): TidalNode[] {
+  const flowHorizontal = direction === "LR" || direction === "RL";
+  // Sweep the rank/node separation ratio. Larger `k` spreads ranks further
+  // apart relative to within-rank spacing (wider for LR, taller for TB).
+  const candidates = [0.18, 0.3, 0.5, 0.75, 1, 1.5, 2.25, 3.5, 5];
+  const BASE = 60;
+  const clamp = (v: number) => Math.max(20, Math.min(220, v));
+
+  let best: TidalNode[] | null = null;
+  let bestErr = Infinity;
+  for (const k of candidates) {
+    const ranksep = clamp(BASE * Math.sqrt(k));
+    const nodesep = clamp(BASE / Math.sqrt(k));
+    const laid = tidyLayout(nodes, edges, direction, sizeOf, {
+      ranksep: flowHorizontal ? ranksep : nodesep,
+      nodesep: flowHorizontal ? nodesep : ranksep,
+    });
+    const { width, height } = contentBounds(laid, sizeOf);
+    const err = Math.abs(width / height - targetAspect);
+    if (err < bestErr) {
+      bestErr = err;
+      best = laid;
+    }
+  }
+  return best ?? tidyLayout(nodes, edges, direction, sizeOf);
+}
+
+/** Parse a "4:3" / "16/9" / "1.5" aspect string into width/height. Returns null if unusable. */
+export function parseAspect(raw: string): number | null {
+  const m = raw.trim().match(/^(\d+(?:\.\d+)?)\s*[:/x]\s*(\d+(?:\.\d+)?)$/i);
+  if (m) {
+    const w = parseFloat(m[1]), h = parseFloat(m[2]);
+    return h > 0 ? w / h : null;
+  }
+  const n = parseFloat(raw);
+  return isFinite(n) && n > 0 ? n : null;
 }

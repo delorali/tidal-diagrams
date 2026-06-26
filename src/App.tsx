@@ -39,7 +39,9 @@ import { detectUnsupportedDiagramType } from "./diagram/diagramType";
 import { parseSequence } from "./diagram/sequence";
 import { sequenceToDoc } from "./diagram/sequenceLayout";
 import { docToJson, jsonToDoc, specToDoc } from "./diagram/io";
+import { docFromHash } from "./diagram/urlLoad";
 import { copyDiagramPng, exportDiagram } from "./diagram/export";
+import { docToFigmaSpec, figmaClipboardPayload } from "./diagram/figmaExport";
 import { newId, stripForExport } from "./diagram/doc";
 import { startLibrarySync } from "./diagram/library";
 import { HomePage } from "./Home";
@@ -318,6 +320,17 @@ function HeaderBar({
     URL.revokeObjectURL(link.href);
   };
 
+  const exportToFigma = async () => {
+    const { nodes, edges, meta } = useDiagramStore.getState();
+    const payload = figmaClipboardPayload(docToFigmaSpec(nodes, edges, meta));
+    try {
+      await navigator.clipboard.writeText(payload);
+      toast.success("Copied. In Claude Code, paste it and add your Figma design-page URL.");
+    } catch {
+      toast.error("Couldn't access the clipboard — check browser permissions.");
+    }
+  };
+
   const loadExample = (id: string) => {
     const example = EXAMPLES.find((e) => e.id === id);
     if (!example) return;
@@ -395,12 +408,31 @@ function HeaderBar({
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() =>
+                exportDiagram(rf, "png", { aspect: 4 / 3, aspectLabel: "4:3" }).then(() =>
+                  toast.success("Downloading tidal-diagram-4x3.png"),
+                )
+              }
+            >
+              PNG file (4:3)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() =>
+                exportDiagram(rf, "png", { aspect: 16 / 9, aspectLabel: "16:9" }).then(() =>
+                  toast.success("Downloading tidal-diagram-16x9.png"),
+                )
+              }
+            >
+              PNG file (16:9)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() =>
                 exportDiagram(rf, "svg").then(() => toast.success("Downloading tidal-diagram.svg"))
               }
             >
               SVG file
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={exportJson}>JSON file</DropdownMenuItem>
+            <DropdownMenuItem onSelect={exportToFigma}>Export to Figma…</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -422,8 +454,38 @@ export default function App() {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
-  // First run (no persisted doc): seed with the flagship example.
+  // A diagram handed in via the URL fragment (e.g. a `/diagram` prompt in Claude
+  // Code) wins over the seed/persisted doc. Load it, drop you in the editor, then
+  // clear the fragment so a refresh keeps the now-autosaved working copy.
+  const hashLoaded = useRef(false);
   useEffect(() => {
+    const load = () => {
+      try {
+        const result = docFromHash(window.location.hash);
+        if (!result) return false;
+        loadDoc(result.doc);
+        setView("editor");
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+        if (result.warnings.length) toast.warning(result.warnings[0]);
+        return true;
+      } catch (err) {
+        toast.error(`Could not load diagram from link: ${err instanceof Error ? err.message : err}`);
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+        return false;
+      }
+    };
+    if (load()) hashLoaded.current = true;
+    const onHashChange = () => {
+      if (load()) hashLoaded.current = true;
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [loadDoc]);
+
+  // First run (no persisted doc): seed with the flagship example — unless a URL
+  // fragment already supplied a diagram.
+  useEffect(() => {
+    if (hashLoaded.current || window.location.hash.includes("=")) return;
     if (localStorage.getItem("tidal-diagrams-doc")) return;
     const { spec } = parseMermaid(EXAMPLES[1].source);
     loadDoc(specToDoc(spec, EXAMPLES[1].name));

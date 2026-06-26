@@ -3,11 +3,20 @@ import { toBlob, toPng, toSvg } from "html-to-image";
 
 type CaptureOptions = Parameters<typeof toPng>[1];
 
-function captureSetup(rf: ReactFlowInstance): { el: HTMLElement; options: CaptureOptions; restore: () => void } {
+function captureSetup(
+  rf: ReactFlowInstance,
+  aspect?: number,
+): { el: HTMLElement; options: CaptureOptions; restore: () => void } {
   const bounds = getNodesBounds(rf.getNodes());
   const pad = 48;
-  const width = Math.ceil(bounds.width + pad * 2);
-  const height = Math.ceil(bounds.height + pad * 2);
+  let width = Math.ceil(bounds.width + pad * 2);
+  let height = Math.ceil(bounds.height + pad * 2);
+  // Pad the frame out to a target aspect ratio; the content stays centered
+  // inside it (getViewportForBounds fits + centers the bounds).
+  if (aspect && aspect > 0) {
+    if (width / height < aspect) width = Math.ceil(height * aspect);
+    else height = Math.ceil(width / aspect);
+  }
   const viewport = getViewportForBounds(bounds, width, height, 0.1, 4, 0.06);
 
   const el = document.querySelector<HTMLElement>(".react-flow__viewport");
@@ -58,8 +67,12 @@ function triggerDownload(href: string, filename: string) {
   link.click();
 }
 
-export async function exportDiagram(rf: ReactFlowInstance, format: "png" | "svg") {
-  const { el, options, restore } = captureSetup(rf);
+export async function exportDiagram(
+  rf: ReactFlowInstance,
+  format: "png" | "svg",
+  opts: { aspect?: number; aspectLabel?: string } = {},
+) {
+  const { el, options, restore } = captureSetup(rf, opts.aspect);
   let dataUrl: string;
   try {
     dataUrl =
@@ -67,7 +80,8 @@ export async function exportDiagram(rf: ReactFlowInstance, format: "png" | "svg"
   } finally {
     restore();
   }
-  triggerDownload(dataUrl, `tidal-diagram.${format}`);
+  const suffix = opts.aspectLabel ? `-${opts.aspectLabel.replace(/[:/]/g, "x")}` : "";
+  triggerDownload(dataUrl, `tidal-diagram${suffix}.${format}`);
 }
 
 /** Render the diagram to PNG and put it on the clipboard (no download involved). */
