@@ -16,7 +16,11 @@ and print the link. When the user opens it, the running app loads the diagram
    use shapes (`#db`, `#pill`) and groups where they add meaning.
 2. **Build the link** by piping the quick-text into the encoder script. Give it a short title:
    ```bash
-   printf '%s' "$QUICKTEXT" | node scripts/diagram-link.mjs --title "Checkout flow"
+   # The encoder is bundled with this skill. Pick the path that exists:
+   #   • installed as a plugin → "$CLAUDE_PLUGIN_ROOT/scripts/diagram-link.mjs"
+   #   • working inside the tidal-diagrams repo → scripts/diagram-link.mjs
+   ENC="${CLAUDE_PLUGIN_ROOT:+$CLAUDE_PLUGIN_ROOT/}scripts/diagram-link.mjs"
+   printf '%s' "$QUICKTEXT" | node "$ENC" --title "Checkout flow"
    ```
    - The script auto-targets `http://localhost:5173`. If the dev server runs on
      another port, pass `--port <n>` (or set `TIDAL_PORT`). Quickly check with

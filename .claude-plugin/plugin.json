@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "tidal-diagram-skills",
+  "displayName": "Tidal Diagram Skills",
+  "version": "0.1.0",
+  "description": "Build diagrams in the Tidal Diagrams app from a prompt, and export them to Figma as editable layers.",
+  "author": { "name": "Delora Li" },
+  "homepage": "https://github.com/delorali/tidal-diagrams/blob/main/.claude/skills/README.md",
+  "repository": "https://github.com/delorali/tidal-diagrams",
+  "license": "MIT",
+  "keywords": ["diagrams", "figma", "tidal-diagrams", "quick-text", "export"],
+  "skills": "./.claude/skills"
+}

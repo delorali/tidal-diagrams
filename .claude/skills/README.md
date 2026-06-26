@@ -1,11 +1,33 @@
 # Tidal Diagrams — Claude Code skills
 
-Project-scoped Claude Code skills that turn natural-language prompts into diagrams in
-this app, and push diagrams out to Figma as editable layers. They live **in this repo**
-(under `.claude/skills/`) on purpose — they're tightly coupled to the app's quick-text
-DSL, the loader in `src/diagram/urlLoad.ts`, the spec builder in `src/diagram/figmaExport.ts`,
-the helper in `scripts/diagram-link.mjs`, and the Liquid design tokens. They version with
-the code that they depend on; a change to the DSL or tokens updates the skill in the same PR.
+Claude Code skills that turn natural-language prompts into diagrams in this app, and push
+diagrams out to Figma as editable layers. They live **in this repo** (under `.claude/skills/`)
+on purpose — they're tightly coupled to the app's quick-text DSL, the loader in
+`src/diagram/urlLoad.ts`, the spec builder in `src/diagram/figmaExport.ts`, the helper in
+`scripts/diagram-link.mjs`, and the Liquid design tokens. They version with the code that
+they depend on; a change to the DSL or tokens updates the skill in the same PR.
+
+## Two ways to use them
+
+**Working in this repo** — the skills auto-load as project skills (no install). Just type
+`/diagram …` or `/diagram-to-figma …`.
+
+**Anywhere else (shareable plugin)** — this repo is also a Claude Code *plugin marketplace*.
+Anyone running their own Tidal Diagrams app can install the skills:
+
+```bash
+/plugin marketplace add delorali/tidal-diagrams
+/plugin install tidal-diagram-skills@tidal-diagrams
+```
+
+Installed, the commands are namespaced: `/tidal-diagram-skills:diagram` and
+`/tidal-diagram-skills:diagram-to-figma`. The bundled `scripts/diagram-link.mjs` is resolved
+via `$CLAUDE_PLUGIN_ROOT`. (The plugin reuses these same `.claude/skills/` files — see
+`.claude-plugin/plugin.json` — so there's a single source of truth, no duplication.)
+
+> The skills produce links the Tidal Diagrams app's loader understands and a Figma spec the
+> app emits, so they're meant for people running the app — that's why the marketplace lives
+> in the app repo rather than a standalone one.
 
 ## `/diagram <description>` — prompt → diagram in the app
 

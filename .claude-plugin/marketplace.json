@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "tidal-diagrams",
+  "version": "0.1.0",
+  "description": "Claude Code skills for the Tidal Diagrams app: prompt-to-diagram and editable Figma export.",
+  "owner": { "name": "Delora Li" },
+  "plugins": [
+    {
+      "name": "tidal-diagram-skills",
+      "displayName": "Tidal Diagram Skills",
+      "source": "./",
+      "description": "Build diagrams from a prompt (/diagram) and export them to Figma as editable layers (/diagram-to-figma).",
+      "homepage": "https://github.com/delorali/tidal-diagrams/blob/main/.claude/skills/README.md",
+      "license": "MIT",
+      "keywords": ["diagrams", "figma", "tidal-diagrams"],
+      "category": "productivity"
+    }
+  ]
+}
