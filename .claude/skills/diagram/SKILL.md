@@ -22,10 +22,11 @@ and print the link. When the user opens it, the running app loads the diagram
    ENC="${CLAUDE_PLUGIN_ROOT:+$CLAUDE_PLUGIN_ROOT/}scripts/diagram-link.mjs"
    printf '%s' "$QUICKTEXT" | node "$ENC" --title "Checkout flow"
    ```
-   - The script auto-targets `http://localhost:5173`. If the dev server runs on
-     another port, pass `--port <n>` (or set `TIDAL_PORT`). Quickly check with
-     `lsof -ti tcp:5173` or look for the Vite process; if the app isn't running,
-     tell the user to start it with `npm run dev` first.
+   - **Target host** is resolved automatically: installed as a plugin it points at the
+     hosted app (`https://delorali.github.io/tidal-diagrams`) — so the user just opens the
+     link, nothing to run locally. Working in this repo it points at `http://localhost:5173`
+     (pass `--port <n>` / `$TIDAL_PORT` if the dev server moved; start it with `npm run dev`
+     if it isn't up). Override either with `--host <url>` or `$TIDAL_HOST`.
    - **Direction**: prefer a `direction LR` line in the quick-text. The
      `--direction LR|TB|RL|BT` flag is a convenience override for the whole diagram.
    - **Aspect / dimensions**: pass `--aspect 4:3` (also `16:9`, `1.5`) to bias the

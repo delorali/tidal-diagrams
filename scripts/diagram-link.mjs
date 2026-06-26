@@ -4,10 +4,17 @@
 //   echo "<quick-text>" | node scripts/diagram-link.mjs --title "My diagram"
 //
 // Prints a single URL whose fragment carries the diagram. Opening it in a
-// running Tidal Diagrams app loads the diagram (see src/diagram/urlLoad.ts).
-// The dev server port is auto-detected (Vite default 5173) or set with --port.
+// Tidal Diagrams app loads the diagram (see src/diagram/urlLoad.ts).
+//
+// Target host resolution (first match wins):
+//   1. --host <url>
+//   2. $TIDAL_HOST
+//   3. the hosted app, when run as an installed plugin ($CLAUDE_PLUGIN_ROOT set)
+//   4. http://localhost:<port>  (--port / $TIDAL_PORT, default 5173) for local dev
 
 import { readFileSync } from "node:fs";
+
+const HOSTED = "https://delorali.github.io/tidal-diagrams";
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
@@ -21,7 +28,9 @@ if (!source.trim()) {
 }
 
 const port = arg("--port", process.env.TIDAL_PORT || "5173");
-const host = arg("--host", `http://localhost:${port}`);
+const defaultHost =
+  process.env.TIDAL_HOST || (process.env.CLAUDE_PLUGIN_ROOT ? HOSTED : `http://localhost:${port}`);
+const host = arg("--host", defaultHost).replace(/\/+$/, "");
 const title = arg("--title", "");
 const direction = arg("--direction", ""); // LR | TB | RL | BT — overrides any `direction` line
 const aspect = arg("--aspect", ""); // e.g. 4:3, 16:9, 1.5 — best-effort layout fit

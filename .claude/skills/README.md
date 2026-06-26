@@ -12,22 +12,24 @@ they depend on; a change to the DSL or tokens updates the skill in the same PR.
 **Working in this repo** — the skills auto-load as project skills (no install). Just type
 `/diagram …` or `/diagram-to-figma …`.
 
-**Anywhere else (shareable plugin)** — this repo is also a Claude Code *plugin marketplace*.
-Anyone running their own Tidal Diagrams app can install the skills:
+**Anywhere else (shareable plugin) — no clone needed.** This repo is also a Claude Code
+*plugin marketplace*, and the app is deployed at **https://delorali.github.io/tidal-diagrams**.
+Install the skills and they target that hosted app automatically:
 
 ```bash
 /plugin marketplace add delorali/tidal-diagrams
 /plugin install tidal-diagram-skills@tidal-diagrams
 ```
 
-Installed, the commands are namespaced: `/tidal-diagram-skills:diagram` and
-`/tidal-diagram-skills:diagram-to-figma`. The bundled `scripts/diagram-link.mjs` is resolved
-via `$CLAUDE_PLUGIN_ROOT`. (The plugin reuses these same `.claude/skills/` files — see
-`.claude-plugin/plugin.json` — so there's a single source of truth, no duplication.)
+Then `/tidal-diagram-skills:diagram a checkout flow` prints a
+`https://delorali.github.io/tidal-diagrams/#t=…` link — open it and the diagram loads in the
+hosted app. No local server required. (Commands are namespaced once installed; the bundled
+`scripts/diagram-link.mjs` is resolved via `$CLAUDE_PLUGIN_ROOT`, and the plugin reuses these
+same `.claude/skills/` files via `.claude-plugin/plugin.json` — single source of truth.)
 
-> The skills produce links the Tidal Diagrams app's loader understands and a Figma spec the
-> app emits, so they're meant for people running the app — that's why the marketplace lives
-> in the app repo rather than a standalone one.
+> Host resolution in `scripts/diagram-link.mjs`: `--host` → `$TIDAL_HOST` → hosted app (when
+> run as a plugin) → `http://localhost:5173` (in-repo dev). `/diagram-to-figma` is unaffected —
+> it works off the diagram spec regardless of where the app is running.
 
 ## `/diagram <description>` — prompt → diagram in the app
 
