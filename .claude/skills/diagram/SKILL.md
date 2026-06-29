@@ -23,7 +23,7 @@ and print the link. When the user opens it, the running app loads the diagram
    printf '%s' "$QUICKTEXT" | node "$ENC" --title "Checkout flow"
    ```
    - **Target host** is resolved automatically: installed as a plugin it points at the
-     hosted app (`https://liquid4all.github.io/tidal-diagrams`) — so the user just opens the
+     hosted app (`https://tidal-diagrams.vercel.app`) — so the user just opens the
      link, nothing to run locally. Working in this repo it points at `http://localhost:5173`
      (pass `--port <n>` / `$TIDAL_PORT` if the dev server moved; start it with `npm run dev`
      if it isn't up). Override either with `--host <url>` or `$TIDAL_HOST`.

@@ -14,7 +14,7 @@
 
 import { readFileSync } from "node:fs";
 
-const HOSTED = "https://liquid4all.github.io/tidal-diagrams";
+const HOSTED = "https://tidal-diagrams.vercel.app";
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
