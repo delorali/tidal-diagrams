@@ -17,9 +17,12 @@ they depend on; a change to the DSL or tokens updates the skill in the same PR.
 Install the skills and they target that hosted app automatically:
 
 ```bash
-/plugin marketplace add Liquid4All/tidal-diagrams
+/plugin marketplace add https://github.com/Liquid4All/tidal-diagrams.git
 /plugin install tidal-diagram-skills@tidal-diagrams
 ```
+
+> Use the HTTPS URL — the `owner/repo` shorthand clones over SSH, which fails
+> without a local SSH key + GitHub host key.
 
 Then `/tidal-diagram-skills:diagram a checkout flow` prints a
 `https://tidal-diagrams.vercel.app/#t=…` link — open it and the diagram loads in the

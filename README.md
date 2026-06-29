@@ -19,15 +19,37 @@ is deployed at **https://tidal-diagrams.vercel.app**, so you can use them **with
 cloning** — install the plugin and they target the hosted app automatically:
 
 ```text
-/plugin marketplace add Liquid4All/tidal-diagrams
+/plugin marketplace add https://github.com/Liquid4All/tidal-diagrams.git
 /plugin install tidal-diagram-skills@tidal-diagrams
 ```
+
+> The HTTPS URL is recommended — the `owner/repo` shorthand clones over SSH, which
+> fails if you haven't set up an SSH key + GitHub host key locally.
 
 - **`/tidal-diagram-skills:diagram <description>`** — turns a prompt into a diagram and prints a
   link that loads it in the app (e.g. `/tidal-diagram-skills:diagram a checkout flow with retries`).
   Add hints like "left to right" or "fit 4:3".
 - **`/tidal-diagram-skills:diagram-to-figma <figma /design/ URL>`** — rebuilds the current diagram
   as editable Figma layers (needs Claude's Figma integration connected).
+
+### Example prompts
+
+Starting points — describe the *system*, not the syntax. The skill picks shapes, layout, and
+labels for you; add hints like "left to right", "fit 16:9", or "group the backend" to steer it.
+
+```text
+/tidal-diagram-skills:diagram a user signup flow: form → validation → create account → welcome email, left to right
+/tidal-diagram-skills:diagram a checkout flow with a retry loop on failed payment
+/tidal-diagram-skills:diagram a RAG pipeline: query → embed → vector search → LLM → response, with the docs store as a cylinder
+/tidal-diagram-skills:diagram a 3-tier web architecture (client, API, database), group the backend services
+/tidal-diagram-skills:diagram the model lifecycle: pre-train → fine-tune → evaluate → deploy → monitor, fit 16:9
+/tidal-diagram-skills:diagram a CI/CD pipeline from commit to production with a manual approval gate
+/tidal-diagram-skills:diagram an event-driven order system: API publishes to a queue, three consumers fan out
+```
+
+Have a Mermaid flowchart already? Paste it in and ask to import it, or open the app and use
+**Import → Mermaid…**. To refine, just keep talking — "make it top-down", "split the email step
+into two", "add an error path".
 
 Working in this repo, the same skills auto-load as project skills — just `/diagram` and
 `/diagram-to-figma`, no install. Full details in [`.claude/skills/README.md`](.claude/skills/README.md).
