@@ -62,7 +62,7 @@ children, and can be resized when selected).
 
 ## Mermaid import (flowchart subset)
 
-```mermaid
+```text
 flowchart LR                      %% direction: LR, RL, TB/TD, BT
 
   a[Card label]                   %% rounded card, Geist Mono label
