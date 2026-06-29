@@ -10,7 +10,7 @@
       "displayName": "Tidal Diagram Skills",
       "source": "./",
       "description": "Build diagrams from a prompt (/diagram) and export them to Figma as editable layers (/diagram-to-figma).",
-      "homepage": "https://github.com/delorali/tidal-diagrams/blob/main/.claude/skills/README.md",
+      "homepage": "https://github.com/Liquid4All/tidal-diagrams/blob/main/.claude/skills/README.md",
       "license": "MIT",
       "keywords": ["diagrams", "figma", "tidal-diagrams"],
       "category": "productivity"

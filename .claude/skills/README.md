@@ -13,16 +13,16 @@ they depend on; a change to the DSL or tokens updates the skill in the same PR.
 `/diagram …` or `/diagram-to-figma …`.
 
 **Anywhere else (shareable plugin) — no clone needed.** This repo is also a Claude Code
-*plugin marketplace*, and the app is deployed at **https://delorali.github.io/tidal-diagrams**.
+*plugin marketplace*, and the app is deployed at **https://liquid4all.github.io/tidal-diagrams**.
 Install the skills and they target that hosted app automatically:
 
 ```bash
-/plugin marketplace add delorali/tidal-diagrams
+/plugin marketplace add Liquid4All/tidal-diagrams
 /plugin install tidal-diagram-skills@tidal-diagrams
 ```
 
 Then `/tidal-diagram-skills:diagram a checkout flow` prints a
-`https://delorali.github.io/tidal-diagrams/#t=…` link — open it and the diagram loads in the
+`https://liquid4all.github.io/tidal-diagrams/#t=…` link — open it and the diagram loads in the
 hosted app. No local server required. (Commands are namespaced once installed; the bundled
 `scripts/diagram-link.mjs` is resolved via `$CLAUDE_PLUGIN_ROOT`, and the plugin reuses these
 same `.claude/skills/` files via `.claude-plugin/plugin.json` — single source of truth.)
