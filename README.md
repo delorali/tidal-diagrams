@@ -15,11 +15,11 @@ npm run dev
 ## Use these skills
 
 Two [Claude Code](https://claude.com/claude-code) skills build and export diagrams here. The app
-is deployed at **https://delorali.github.io/tidal-diagrams**, so you can use them **without
+is deployed at **https://liquid4all.github.io/tidal-diagrams**, so you can use them **without
 cloning** — install the plugin and they target the hosted app automatically:
 
 ```text
-/plugin marketplace add delorali/tidal-diagrams
+/plugin marketplace add Liquid4All/tidal-diagrams
 /plugin install tidal-diagram-skills@tidal-diagrams
 ```
 
